@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <title>Contrôle de la caméra</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tlindex.css') }}" media="all" type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+
+  <body>
+
+    <header>
+      <h1>Contrôle de la caméra</h1>
+    </header>
+
+    <section>
+
+      <div class="column main">
+        <img src="{{ url_for('video_feed') }}" alt="Vidéo en streaming ou dernière prise de vue" style="max-width: 100%; height: auto; color: white">
+      </div class="column main">
+
+      <div class="column side">
+        <h2>Fréquence de prise de vue:</h2>
+        <form oninput="f.value=60/parseInt(interv.value)">
+          Intervale : <input name="interv" type="number" value="10"> [secondes]<br>
+          soit <output name="f" for="interv"></output> [img/min]<br>
+        </form>
+
+        <h2>Jours d'activité</h2>
+        <p class="comment">Si tous ou aucun cochés, tous les jours sont activés</p>
+        <div>
+          <input name="mon" type="checkbox" id="mon">
+          <label for="mon">Lundi</label>
+        </div>
+        <div>
+          <input name="tue" type="checkbox" id="mon">
+          <label for="tue">Mardi</label>
+        </div>
+        <div>
+          <input name="wed" type="checkbox" id="mon">
+          <label for="wed">Mercredi</label>
+        </div>
+        <div>
+          <input name="thu" type="checkbox" id="mon">
+          <label for="thu">Jeudi</label>
+        </div>
+        <div>
+          <input name="fri" type="checkbox" id="mon">
+          <label for="fri">Vendredi</label>
+        </div>
+        <div>
+          <input name="sat" type="checkbox" id="mon">
+          <label for="sat">Samedi</label>
+        </div>
+        <div>
+          <input name="sun" type="checkbox" id="mon">
+          <label for="sun">Dimanche</label>
+        </div>
+
+        
+      </div class="column side">
+
+    </section>
+  </body>
+</html>

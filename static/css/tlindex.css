@@ -1,0 +1,62 @@
+html, body {
+  margin: 0;
+  padding: 0;
+}
+body {
+  background-color: white;
+  font-family: monospace;
+  font-size: 100%;
+}
+header {
+  background-color: rgb(210, 210, 210);
+}
+h1 {
+  font-size: 150%;
+  font-weight: bold;
+  color: rgb(0, 57, 89);
+}
+h2 {
+  font-size: 125%;
+  font-weight: bold;
+  color: rgb(0, 88, 120);
+  margin-block-end: 5px;
+}
+p {
+  margin-block-start: 5px;
+  margin-block-end: 5px;
+}
+p.comment {
+    color: rgb(200, 200, 200);
+    margin-block-start: 2px;
+  }
+}
+section {
+  height: max-content;
+}
+section:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.column {
+  float: left;
+}
+
+.main {
+  width: 70%;
+  padding: 0%;
+  background-color: rgb(50, 50, 50);
+}
+.side {
+  width: 29%;
+  height: border-box;
+  overflow: hidden;
+  top-padding: 0px;
+  left-padding: 10px;
+  background-color: rgb(150, 150, 150);
+}
+@media screen and (max-width: 640px) {
+  .column {
+    width: 100%;
+  }
+}
