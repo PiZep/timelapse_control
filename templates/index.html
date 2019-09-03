@@ -2,6 +2,7 @@
 <html lang="fr">
   <head>
     <title>Contrôle de la caméra</title>
+    <!-- <link rel="stylesheet" href="../static/css/tlindex.css" media="all" type="text/css"> -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tlindex.css') }}" media="all" type="text/css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
@@ -15,7 +16,7 @@
     <section>
 
       <div class="column main">
-        <img src="{{ url_for('video_feed') }}" alt="Vidéo en streaming ou dernière prise de vue" style="max-width: 100%; height: auto; color: white">
+        <center><img src="{{ url_for('video_feed') }}" alt="Vidéo en streaming ou dernière prise de vue" style="max-width: 100%; height: auto; color: white"></center>
       </div class="column main">
 
       <div class="column side">

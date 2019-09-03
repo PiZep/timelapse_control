@@ -1,24 +1,23 @@
 """camera_opencv"""
 import os
 import cv2
-from stream_camera import BaseStreamCamera
+# from stream_camera import BaseStreamCamera
+from stream_camera import BaseCamera
 
 
-class Camera():
+class Camera(BaseCamera):
     """Camera class implementing the streaming base class"""
     video_source = 0
-    camera = None
-    stream = None
+    # stream = None
 
     def __init__(self):
         if os.environ.get('OPENCV_CAMERA_SOURCE'):
             Camera.set_video_source(int(os.environ['OPENCV_CAMERA_SOURCE']))
-        self.camera = cv2.VideoCapture(self.video_source)
+        super().__init__()
 
-    @staticmethod
-    def stream():
-        stream = BaseStreamCamera()
-        return stream
+    # @classmethod
+    def permstream(self):
+        self.stream()
 
     @staticmethod
     def set_video_source(source):
@@ -28,13 +27,13 @@ class Camera():
     @staticmethod
     def frames():
         """See BaseCamera"""
-        Camera.camera = cv2.VideoCapture(Camera.video_source)
-        if not Camera.camera.isOpened():
+        camera = cv2.VideoCapture(Camera.video_source)
+        if not camera.isOpened():
             raise RuntimeError('Could not start camera.')
 
         while True:
             # read current frame
-            _, img = Camera.camera.read()
+            _, img = camera.read()
 
             # encode as a jpeg image and return it
             yield cv2.imencode('.jpg', img)[1].tobytes()
@@ -42,15 +41,16 @@ class Camera():
     @staticmethod
     def take_picture(fullname, res):
         """Method to take a single picture"""
-        Camera.camera.set(3, res[0])
-        Camera.camera.set(4, res[1])
+        camera = cv2.VideoCapture(Camera.video_source)
+        camera.set(3, res[0])
+        camera.set(4, res[1])
 
-        Camera.camera.open(Camera.video_source)
-        if not Camera.camera.isOpened():
+        camera.open(Camera.video_source)
+        if not Camera.isOpened():
             raise RuntimeError('Could not start camera.')
 
-        _, pic = Camera.camera.read()
+        _, pic = camera.read()
         cv2.imwrite(fullname, pic)
-        Camera.camera.release()
+        camera.release()
         return cv2.imencode('.jpg', pic)[1].tobytes()
 

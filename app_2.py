@@ -45,7 +45,7 @@ def gen(camera, video=True):
 @app.route('/video_feed')
 def video_feed():
     """Video streaming route. Put it in the src attribute of an <img>"""
-    return Response(gen(cam.stream),
+    return Response(gen(StreamCamera()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 

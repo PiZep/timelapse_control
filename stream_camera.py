@@ -21,6 +21,7 @@ class CameraEvent():
     def wait(self):
         """Invoked from each client's thread to wait for the next frame."""
         ident = get_ident()
+        print(ident)
         if ident not in self.events:
             # this is a new client
             # add an entry for it in the self.events dict
@@ -53,25 +54,38 @@ class CameraEvent():
         self.events[get_ident()][0].clear()
 
 
-class BaseStreamCamera():
+class BaseCamera():
     """Super class used by camera_pi and camera_opencv"""
     thread = None  # background thread that reads frames from camera
     frame = None  # current frame is stored here by background thread
     last_access = 0  # time of last client access to the camera
     event = CameraEvent()
 
-    def __init__(self):
+    def __init__(self, video=True):
         """Start the background camera thread if it isn't running yet."""
-        if BaseStreamCamera.thread is None:
-            BaseStreamCamera.last_access = time.time()
+        if BaseCamera.thread is None:
+            BaseCamera.last_access = time.time()
 
             # start background frame thread
-            BaseStreamCamera.thread = threading.Thread(target=self._thread)
-            BaseStreamCamera.thread.start()
+            BaseCamera.thread = threading.Thread(target=self._thread)
+            BaseCamera.thread.start()
 
             # wait until frames are available
             while self.get_frame() is None:
                 time.sleep(0)
+
+    def stop(self):
+        """Start or stop the streaming thread"""
+        # TODO: add a stop function for the thread
+        if BaseCamera.thread is not None:
+
+#             # start background frame thread
+#             BaseCamera.thread = threading.Thread(target=self._thread)
+#             BaseCamera.thread.start()
+
+#             # wait until frames are available
+#             while self.get_frame() is None:
+#                 time.sleep(0)
 
     def get_frame(self):
         """Return the current camera frame."""
@@ -94,15 +108,15 @@ class BaseStreamCamera():
         print('Starting camera thread.')
         frames_iterator = cls.frames()
         for frame in frames_iterator:
-            BaseStreamCamera.frame = frame
-            BaseStreamCamera.event.set()  # send signal to clients
+            BaseCamera.frame = frame
+            BaseCamera.event.set()  # send signal to clients
             time.sleep(0)
 
             # if there hasn't been any clients asking for frames in
             # the last 10 seconds then stop the thread
-            # if time.time() - BaseCamera.last_access > 10:
-            #     frames_iterator.close()
-            #     print('Stopping camera thread due to inactivity.')
-            #     break
-        BaseStreamCamera.thread = None
+            if time.time() - BaseCamera.last_access > 10:
+                frames_iterator.close()
+                print('Stopping camera thread due to inactivity.')
+                break
+        BaseCamera.thread = None
 
