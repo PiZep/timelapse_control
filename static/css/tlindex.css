@@ -29,7 +29,7 @@ p.comment {
     color: rgb(200, 200, 200);
     margin-block-start: 2px;
   }
-}
+
 section {
   height: max-content;
 }
@@ -51,12 +51,22 @@ section:after {
   width: 29%;
   height: border-box;
   overflow: hidden;
-  top-padding: 0px;
-  left-padding: 10px;
+  padding: 0 0.5rem 0 0.5rem;
   background-color: rgb(150, 150, 150);
 }
 @media screen and (max-width: 640px) {
   .column {
     width: 100%;
   }
+}
+
+div.box {
+  border: 2px;
+  border-style: solid;
+  border-color: rgb(80, 80, 80);
+  margin: 2%;
+}
+
+input[type="number"] {
+  width: 20%
 }

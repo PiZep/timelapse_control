@@ -16,8 +16,8 @@ class Camera(BaseCamera):
         super().__init__()
 
     # @classmethod
-    def permstream(self):
-        self.stream()
+    # def permstream(self):
+    #     self.stream()
 
     @staticmethod
     def set_video_source(source):
@@ -52,5 +52,6 @@ class Camera(BaseCamera):
         _, pic = camera.read()
         cv2.imwrite(fullname, pic)
         camera.release()
-        return cv2.imencode('.jpg', pic)[1].tobytes()
+        # return cv2.imencode('.jpg', pic)[1].tobytes()
+        return fullname
 

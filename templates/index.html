@@ -2,7 +2,7 @@
 <html lang="fr">
   <head>
     <title>Contrôle de la caméra</title>
-    <!-- <link rel="stylesheet" href="../static/css/tlindex.css" media="all" type="text/css"> -->
+    <link rel="stylesheet" href="../static/css/tlindex.css" media="all" type="text/css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tlindex.css') }}" media="all" type="text/css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
@@ -28,36 +28,43 @@
 
         <h2>Jours d'activité</h2>
         <p class="comment">Si tous ou aucun cochés, tous les jours sont activés</p>
-        <div>
-          <input name="mon" type="checkbox" id="mon">
-          <label for="mon">Lundi</label>
-        </div>
-        <div>
-          <input name="tue" type="checkbox" id="mon">
-          <label for="tue">Mardi</label>
-        </div>
-        <div>
-          <input name="wed" type="checkbox" id="mon">
-          <label for="wed">Mercredi</label>
-        </div>
-        <div>
-          <input name="thu" type="checkbox" id="mon">
-          <label for="thu">Jeudi</label>
-        </div>
-        <div>
-          <input name="fri" type="checkbox" id="mon">
-          <label for="fri">Vendredi</label>
-        </div>
-        <div>
-          <input name="sat" type="checkbox" id="mon">
-          <label for="sat">Samedi</label>
-        </div>
-        <div>
-          <input name="sun" type="checkbox" id="mon">
-          <label for="sun">Dimanche</label>
-        </div>
+          <form action="" method="post">
+            <div class="box">
+              <input name="all" type="checkbox" id="all">
+              <label for="all">Jours de la semaine :</label>
+              <ul style="list-style-type:none">
+                <li> 
+                  <input name="mon" type="checkbox" id="mon">
+                  <label for="mon">Lundi</label>
+                </li>
+                <li>
+                  <input name="tue" type="checkbox" id="tue">
+                  <label for="tue">Mardi</label>
+                </li>
+                <li>
+                  <input name="wed" type="checkbox" id="wed">
+                  <label for="wed">Mercredi</label>
+                </li>
+                <li>
+                  <input name="thu" type="checkbox" id="thu">
+                  <label for="thu">Jeudi</label>
+                </li>
+                <li>
+                  <input name="fri" type="checkbox" id="fri">
+                  <label for="fri">Vendredi</label>
+                </li>
+                <li>
+                  <input name="sat" type="checkbox" id="sat">
+                  <label for="sat">Samedi</label>
+                </li>
+                <li>
+                  <input name="sun" type="checkbox" id="sun">
+                  <label for="sun">Dimanche</label>
+                </li>
+              </ul>
+            </div>
+          </form>
 
-        
       </div class="column side">
 
     </section>

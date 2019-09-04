@@ -1,4 +1,9 @@
-"""stream_camera"""
+"""stream_camera
+
+This file is based on Miguel Grinberg work:
+https://github.com/miguelgrinberg/flask-video-streaming
+
+"""
 import time
 import threading
 try:
@@ -8,6 +13,21 @@ except ImportError:
         from thread import get_ident
     except ImportError:
         from _thread import get_ident
+
+
+class StopableThread(threading.Thread):
+    """Thread with a stop() method. Based upon:
+    https://stackoverflow.com/questions/323972/is-there-any-way-to-kill-a-thread/325528#325528"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._stopevent = threading.Event()
+
+    def stop(self):
+        self._stopevent.set()
+
+    def stopped(self):
+        return self._stopevent.is_set()
 
 
 class CameraEvent():
@@ -21,7 +41,6 @@ class CameraEvent():
     def wait(self):
         """Invoked from each client's thread to wait for the next frame."""
         ident = get_ident()
-        print(ident)
         if ident not in self.events:
             # this is a new client
             # add an entry for it in the self.events dict
@@ -61,31 +80,21 @@ class BaseCamera():
     last_access = 0  # time of last client access to the camera
     event = CameraEvent()
 
-    def __init__(self, video=True):
-        """Start the background camera thread if it isn't running yet."""
+    def __init__(self, video=False):
+        if video:
+            self.perm_stream()
+
+    def perm_stream(self):
+        """Start or stop the streaming thread"""
         if BaseCamera.thread is None:
-            BaseCamera.last_access = time.time()
-
             # start background frame thread
-            BaseCamera.thread = threading.Thread(target=self._thread)
+            BaseCamera.thread = StopableThread(target=self._thread)
             BaseCamera.thread.start()
-
             # wait until frames are available
             while self.get_frame() is None:
                 time.sleep(0)
-
-    def stop(self):
-        """Start or stop the streaming thread"""
-        # TODO: add a stop function for the thread
-        if BaseCamera.thread is not None:
-
-#             # start background frame thread
-#             BaseCamera.thread = threading.Thread(target=self._thread)
-#             BaseCamera.thread.start()
-
-#             # wait until frames are available
-#             while self.get_frame() is None:
-#                 time.sleep(0)
+        else:
+            BaseCamera.thread.stop()
 
     def get_frame(self):
         """Return the current camera frame."""
@@ -114,9 +123,14 @@ class BaseCamera():
 
             # if there hasn't been any clients asking for frames in
             # the last 10 seconds then stop the thread
-            if time.time() - BaseCamera.last_access > 10:
+            # if time.time() - BaseCamera.last_access > 10:
+            #     frames_iterator.close()
+            #     print('Stopping camera thread due to inactivity.')
+            #     break
+            if BaseCamera.thread.stopped():
                 frames_iterator.close()
-                print('Stopping camera thread due to inactivity.')
+                print('Stopping camera as asked.')
                 break
+
         BaseCamera.thread = None
 

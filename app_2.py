@@ -14,6 +14,7 @@ import tlconfig
 
 # import camera driver
 if os.environ.get('CAMERA'):
+    print(os.environ.get('CAMERA'))
     StreamCamera = import_module('camera_' + os.environ['CAMERA']).Camera
 # else:
 #     from camera import Camera
@@ -25,34 +26,48 @@ if os.environ.get('CAMERA'):
 
 app = Flask(__name__)
 cam = StreamCamera()
+last_shot = None
 last_pic = None
 
 
 @app.route('/')
 def index():
     """Home and only page"""
+    print("index")
     return render_template('index.html')
 
 
-def gen(camera, video=True):
+def gen(camera):
     """Video generator, stream for video True"""
-    while video:
+    print("gen")
+    while True:
         frame = camera.get_frame()
         yield (b'--frame\r\n'
                b'Content-Types: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 
 @app.route('/video_feed')
-def video_feed():
+def video_feed(video=True):
     """Video streaming route. Put it in the src attribute of an <img>"""
-    return Response(gen(StreamCamera()),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+    print("video_feed")
+    if video:
+        cam.perm_stream()
+        return Response(gen(cam),
+                        mimetype='multipart/x-mixed-replace; boundary=frame')
+    else:
+        cam.perm_stream()
+        return last_pic
+
+
+def name_picture():
+    """Set and return the name of a picture"""
+    tlconfig.PATH
 
 
 def take_picture():
     """Take a picture"""
-    pic_full_path = (tlconfig.PATH + socket.gethostname() +
-                     datetime.now().strftime('%Y_%m_%d_%H_%M_%S') + '.jpg')
+    print("take_picture")
+    pic_full_path = name_picture()
     print(pic_full_path)
     res = tlconfig.CAM_RES
     cam.take_picture(pic_full_path, res)
@@ -63,13 +78,15 @@ def daysset():
 
     All values True or False means every day is set
     """
+    print("daysset")
     return tlconfig.DAYS[1:] == tlconfig.DAYS[:-1]
 
 
 def delay(self):
     """Calculate the delay in second before the next picture"""
 
-    next_pic = datetime.fromtimestamp(last_pic + tlconfig.INTERVAL)
+    print("delay")
+    next_pic = datetime.fromtimestamp(last_shot + tlconfig.INTERVAL)
 
     forecast = timedelta(hours=next_pic.hour,
                          minutes=next_pic.minute).total_seconds()
@@ -87,25 +104,27 @@ def delay(self):
                 week_day = week_day + 1 if week_day < 6 else 0
                 d_days += 1
 
-        next_pic = datetime(year=last_pic.year, month=next_pic.month,
-                            day=last_pic.day + d_days,
+        next_pic = datetime(year=last_shot.year, month=next_pic.month,
+                            day=last_shot.day + d_days,
                             hour=tlconfig.START_HOUR,
                             minute=tlconfig.START_MIN)
 
     delay = next_pic - datetime.now()
 
-    print(d_days, delay.total_seconds(), last_pic, next_pic)
+    print(d_days, delay.total_seconds(), last_shot, next_pic)
     return delay.total_seconds()
 
 
-def run_timelapse():
+def timelapse():
     """Set timelapse"""
+    print("timelapse")
+    global last_shot
     global last_pic
     while True:
-        last_pic = time.time()
-        take_picture()
+        last_shot = time.time()
+        last_pic = take_picture()
         if tlconfig.TIMESET:
             time.sleep(delay())
         else:
-            time.sleep(tlconfig.INTERVAL - time.time() - last_pic)
+            time.sleep(tlconfig.INTERVAL - time.time() - last_shot)
 
