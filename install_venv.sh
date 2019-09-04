@@ -36,13 +36,11 @@ case $DISTRIB in
 esac
 
 # Installation de l'environnement virtuel
-sudo pip3 install --user virtualenv
+python3 -m venv $WPATH/env/
 
-virtualenv -p python3 $WPATH/env/
-
-sudo pip3 install --user -r $PIP_REQ
+pip3 install --user -r $PIP_REQ
 
 # Création des liens des librairies installées sur le système
 # vers l'environnement virtuel
-ln -s /usr/lib/python3/dist-packages/*cv2*
-ln -s /usr/lib/python3/dist-packages/*numpy*
+PYTHON_VER="python3."&(python3 -c 'import sys; print(sys.version_info[1])')
+ln -s /usr/lib/python3/dist-packages/{*cv2*,*numpy*} $WPATH/env/lib/$PYTHON_VER/site-packages/
