@@ -14,7 +14,7 @@ DISTRIB=$(lsb_release -is)          # distribution linux
 
 # Définit le fichier requirements pour l'installation
 # des paquets python3 via pip3
-if [ $# -lt 2 ]
+if [ $# -lt 1 ]
 then
 	PIP_REQ="requirements.txt"
 else
@@ -39,10 +39,11 @@ esac
 python3 -m venv $WPATH/env/
 
 source $WPATH/env/bin/activate
+
 PYTHON_VER="python3."$(python3 -c 'import sys; print(sys.version_info[1])')
 echo $PYTHON_VER
 
-pip3 install --user -r $PIP_REQ
+pip3 install -r $PIP_REQ
 
 deactivate
 # Création des liens des librairies installées sur le système
