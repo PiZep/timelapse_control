@@ -28,7 +28,7 @@ echo $WPATH
 case $DISTRIB in
     # VoidLinux : machine de test
 	"VoidLinux")
-		sudo xbps-install -s libopencv-python3
+		sudo xbps-install -S libopencv-python3
 		;;
 	"Debian" | "Raspbian")
 		sudo apt install python3-opencv -y
@@ -38,9 +38,20 @@ esac
 # Installation de l'environnement virtuel
 python3 -m venv $WPATH/env/
 
+source $WPATH/env/bin/activate
+PYTHON_VER="python3."$(python3 -c 'import sys; print(sys.version_info[1])')
+echo $PYTHON_VER
+
 pip3 install --user -r $PIP_REQ
 
+deactivate
 # Création des liens des librairies installées sur le système
 # vers l'environnement virtuel
-PYTHON_VER="python3."&(python3 -c 'import sys; print(sys.version_info[1])')
-ln -s /usr/lib/python3/dist-packages/{*cv2*,*numpy*} $WPATH/env/lib/$PYTHON_VER/site-packages/
+CV2_LIB=$(python3 -c 'import cv2; print(cv2.__file__)')
+ln -s $CV2_LIB $WPATH/env/lib/$PYTHON_VER/site-packages/
+
+NUMPY_LIB=$(python3 -c 'import numpy; print(numpy.__path__)')
+NUMPY_LIB=${NUMPY_LIB%"']"}
+NUMPY_LIB=${NUMPY_LIB#"['"}
+ln -s $NUMPY_LIB $WPATH/env/lib/$PYTHON_VER/site-packages/
+
