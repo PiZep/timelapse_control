@@ -6,26 +6,18 @@ from datetime import datetime, timedelta
 import time
 from importlib import import_module
 import os
-import socket
-# import cv2
-# import threading
+# import socket
 from flask import Flask, render_template, Response
 import tlconfig
 
 # import camera driver
 if os.environ.get('CAMERA'):
     print(os.environ.get('CAMERA'))
-    StreamCamera = import_module('camera_' + os.environ['CAMERA']).Camera
-# else:
-#     from camera import Camera
-
-# Raspberry Pi camera module (requires picamera package)
-# from camera_pi import Camera
-# camera = Camera()
-
+    Camera = import_module('camera_' + os.environ['CAMERA']).Camera
+else:
+    from camera import Camera
 
 app = Flask(__name__)
-cam = StreamCamera()
 last_shot = None
 last_pic = None
 
@@ -51,22 +43,24 @@ def video_feed(video=True):
     """Video streaming route. Put it in the src attribute of an <img>"""
     print("video_feed")
     if video:
+        cam = Camera()
         cam.perm_stream()
         return Response(gen(cam),
                         mimetype='multipart/x-mixed-replace; boundary=frame')
     else:
         cam.perm_stream()
-        return last_pic
 
 
 def name_picture():
     """Set and return the name of a picture"""
-    tlconfig.PATH
+    print("name_picture")
+    return tlconfig.PATH
 
 
 def take_picture():
     """Take a picture"""
     print("take_picture")
+    cam = Camera()
     pic_full_path = name_picture()
     print(pic_full_path)
     res = tlconfig.CAM_RES
@@ -119,12 +113,16 @@ def timelapse():
     """Set timelapse"""
     print("timelapse")
     global last_shot
-    global last_pic
+    # global last_pic
     while True:
         last_shot = time.time()
-        last_pic = take_picture()
+        # last_pic = take_picture()
         if tlconfig.TIMESET:
             time.sleep(delay())
         else:
             time.sleep(tlconfig.INTERVAL - time.time() - last_shot)
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', threaded=True)
 

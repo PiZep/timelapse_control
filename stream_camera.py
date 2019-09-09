@@ -129,7 +129,7 @@ class BaseCamera():
             #     break
             if BaseCamera.thread.stopped():
                 frames_iterator.close()
-                print('Stopping camera as asked.')
+                print('Stopping camera thread on demand.')
                 break
 
         BaseCamera.thread = None
