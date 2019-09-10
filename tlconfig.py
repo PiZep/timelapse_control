@@ -31,6 +31,7 @@ try:
         START_MIN = param['start']['minute']
         END_HOUR = param['end']['hour']
         END_MIN = param['end']['minute']
+        LAST_PIC = param['lastpic']
 except FileNotFoundError:
     with open('timelapse.json', 'w') as conf:
         param = default
@@ -42,10 +43,10 @@ def get_config():
     return param
 
 
-def set_config():
+def set_config(new_param):
     """Write back new parameters"""
     with open('timelapse.json', 'w') as conf:
-        json.dump(param, conf)
+        json.dump(new_param, conf)
 
 
 if __name__ == "__main__":
