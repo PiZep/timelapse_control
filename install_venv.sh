@@ -6,7 +6,6 @@
 # qui définit le type de caméra :
 # - "opencv" pour les caméras USB,
 # - "pi" pour la pi cam
-# - rien ou "all" pour les deux.
 
 
 WPATH=$(cd $(dirname $0) && pwd)    # répertoire de travail
