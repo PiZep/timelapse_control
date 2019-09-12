@@ -7,22 +7,10 @@ import os
 # from camera_opencv import Camera
 from datetime import datetime, timedelta
 import time
+from config import *
 import tlconfig
 
 # camera = Camera()
-
-# Configuration constants
-
-TIMESET = tlconfig.TIMESET
-CAM_RES = tlconfig.CAM_RES
-INTERVAL = tlconfig.INTERVAL
-PATH = tlconfig.PATH
-DAYS = tlconfig.DAYS
-START_HOUR = tlconfig.START_HOUR
-START_MIN = tlconfig.START_MIN
-END_HOUR = tlconfig.END_HOUR
-END_MIN = tlconfig.END_MIN
-LAST_PIC = tlconfig.LAST_PIC
 
 
 class TimeLapse():
@@ -30,7 +18,7 @@ class TimeLapse():
 
     def __init__(self, camera):
         self.camera = camera
-        self.config = tlconfig
+        self.config = tlconfig.get_config()
         self.last_pic = None
         self.last_shot = None
         self._count = 0
@@ -71,8 +59,8 @@ class TimeLapse():
 
             next_pic = datetime(year=self.last_shot.year, month=next_pic.month,
                                 day=self.last_shot.day + d_days,
-                                hour=tlconfig.START_HOUR,
-                                minute=tlconfig.START_MIN)
+                                hour=tlconfig.START['hour'],
+                                minute=tlconfig.START['minute'])
 
         delay = next_pic - datetime.now()
 

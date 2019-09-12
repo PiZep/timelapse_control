@@ -2,43 +2,45 @@
 # coding: utf-8
 
 """Main class of the application"""
+import config
 import os
 import json
 
 # camera = Camera()
-DEFAULT = {"timeset": False,
-           "res": {"width": 320, "height": 240},
-           "interval": 60,
-           "path": os.getcwd(),
-           "days": [False] * 7,
-           "start": {"hour": 0, "minute": 0},
-           "end": {"hour": 0, "minute": 0},
-           "lastpic": None
-           }
-
 PARAM = {}
 
-TIMESET = DEFAULT['timeset']
-CAM_RES = (DEFAULT['res']['width'], DEFAULT['res']['height'])
-INTERVAL = DEFAULT['interval']
-PATH = DEFAULT['path']
-DAYS = DEFAULT['days']
-START_HOUR = DEFAULT['start']['hour']
-START_MIN = DEFAULT['start']['minute']
-END_HOUR = DEFAULT['end']['hour']
-END_MIN = DEFAULT['end']['minute']
-LAST_PIC = DEFAULT['lastpic']
+
+def _isvalid(param, key=None):
+    """Check the structure validity"""
+    isvalid = True
+    options = {"timeset", "res", "path", "days", "start", "end", "lastpic"}
+    if key and key in options:
+        keys = {key}
+    else:
+        keys = options
+
+    for k in keys:
+        if not (k in param):
+            isvalid = False
+            break
+        else:
+            if k == 'res':
+                if not ('width' in param[k] and 'height' in param[k]):
+                    isvalid = False
+                    break
+            elif k == 'start' or k == 'end':
+                if not ('hour' in param[k] and 'minute' in param[k]):
+                    isvalid = False
+                    break
+    if not isvalid:
+        raise TypeError()
+    return isvalid
 
 
-def check_path(path, addeddir=''):
+def _check_path(path):
     """Check if the path exists, else return working dir"""
-    if not (os.path.isdir(path) and os.access(path, os.F_OK)):
+    if not (os.path.isdir(path) and os.access(path, os.W_OK)):
         path = os.getcwd()
-
-    if len(addeddir.split(os.path.sep)) >= 1:
-        split_dir = addeddir.split(os.path.sep).insert(0, path)
-        path = os.path.sep.join(split_dir)
-        os.makedirs(path)
 
     return path
 
@@ -48,40 +50,41 @@ def get_config():
     global PARAM
     try:
         with open('timelapse.json', 'r') as conf:
-            PARAM = json.load(conf)
-            PARAM['PATH'] = check_path(PATH)
-            set_config(PARAM)
-    except FileNotFoundError:
+            if os.stat(conf).st_size:
+                PARAM = json.load(conf)
+                PARAM['path'] = _check_path(config.PATH)
+            else:
+                PARAM = config.DEFAULT
+
+    except (FileNotFoundError, TypeError):
         with open('timelapse.json', 'w') as conf:
-            PARAM = DEFAULT
+            PARAM = config.DEFAULT
+            set_config(PARAM)
+
+    if _isvalid(PARAM):
+        set_config(PARAM)
+    else:
+        set_config(config.DEFAULT)
+
+    return PARAM
 
 
-def set_config(new_param):
+def set_config(newparam):
     """Write back new parameters"""
-    global TIMESET
-    global CAM_RES
-    global INTERVAL
-    global PATH
-    global DAYS
-    global START_HOUR
-    global START_MIN
-    global END_HOUR
-    global END_MIN
-    global LAST_PIC
     with open('timelapse.json', 'w') as conf:
-        TIMESET = new_param['timeset']
-        CAM_RES = (new_param['res']['width'], new_param['res']['height'])
-        INTERVAL = new_param['interval']
-        PATH = check_path(new_param['path'])
-        DAYS = new_param['days']
-        START_HOUR = new_param['start']['hour']
-        START_MIN = new_param['start']['minute']
-        END_HOUR = new_param['end']['ur']
-        END_MIN = new_param['end']['mute']
-        LAST_PIC = new_param['lastpic']
-        json.dump(new_param, conf)
+        config.TIMESET = newparam['timeset']
+        config.CAM_RES = (newparam['res']['height'], newparam['res']['width'])
+        config.INTERVAL = newparam['interval']
+        config.PATH = _check_path(newparam['path'])
+        config.DAYS = newparam['days']
+        config.START_HOUR = newparam['start']['hour']
+        config.START_MIN = newparam['start']['minute']
+        config.END_HOUR = newparam['end']['hour']
+        config.END_MIN = newparam['end']['minute']
+        config.LAST_PIC = newparam['lastpic']
+        json.dump(newparam, conf, indent=4)
 
 
-if __name__ == "__main__":
-    set_config(PARAM)
+# if __name__ == "__main__":
+#     set_config(PARAM)
 

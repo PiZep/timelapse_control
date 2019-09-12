@@ -1,23 +1,27 @@
 {
     "timeset": false,
-    "days": [true, true, true, true, true, false, false],
-    "start":
-    {
-	"hour": 8,
-	"minute": 0
-    },
-    "end":
-    {
-	"hour": 17,
-	"minute": 0
+    "res": {
+        "width": 320,
+        "height": 240
     },
     "interval": 60,
-    "frequency": 1,
-    "res":
-    {
-	"width": 1920,
-	"height": 1080
+    "path": "",
+    "days": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+    ],
+    "start": {
+        "hour": 0,
+        "minute": 0
     },
-    "path": "/home/pi/projets/flask-video-streaming/pictures/",
-    "lastpic": null
+    "end": {
+        "hour": 0,
+        "minute": 0
+    },
+    "lastpic": ""
 }
