@@ -11,4 +11,4 @@ This project is another attempt to use the raspberry pi as a timelapse camera.
   - http://blog.miguelgrinberg.com/post/video-streaming-with-flask
   - http://blog.miguelgrinberg.com/post/flask-video-streaming-revisited.
 - Hotspot configuration
-  - www.raspberryconnect.com/projects/65-raspberrypi-hotspot-accesspoints/168-raspberry-pi-hotspot-access-point-dhcpcd-method
+  - http://www.raspberryconnect.com/projects/65-raspberrypi-hotspot-accesspoints/168-raspberry-pi-hotspot-access-point-dhcpcd-method

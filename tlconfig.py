@@ -2,17 +2,18 @@
 # coding: utf-8
 
 """Main class of the application"""
-import config
-import os
 import json
+import os
+import config
 
 # camera = Camera()
 PARAM = {}
 
 
 def _isvalid(param, key=None):
-    """Check the structure validity"""
+    """Check the structure validity of [param]"""
     isvalid = True
+    error = ""
     options = {"timeset", "res", "path", "days", "start", "end", "lastpic"}
     if key and key in options:
         keys = {key}
@@ -20,20 +21,29 @@ def _isvalid(param, key=None):
         keys = options
 
     for k in keys:
-        if not (k in param):
+        if k not in param:
             isvalid = False
+            error = f"key {k} is not an option"
             break
         else:
             if k == 'res':
                 if not ('width' in param[k] and 'height' in param[k]):
                     isvalid = False
+                    error = "Wrong resolution setting"
                     break
-            elif k == 'start' or k == 'end':
+            elif k == "days":
+                if not len(param[k]) == 7 and all(isinstance(d, bool)
+                                                  for d in param[k]):
+                    isvalid = False
+                    error = "Wrong days setting"
+                    break
+            elif k in ('start', 'end'):
                 if not ('hour' in param[k] and 'minute' in param[k]):
                     isvalid = False
+                    error = "Wrong hour setting"
                     break
     if not isvalid:
-        raise TypeError()
+        raise TypeError(error)
     return isvalid
 
 
@@ -47,26 +57,25 @@ def _check_path(path):
 
 def get_config():
     """Get the actual configuration"""
-    global PARAM
     try:
         with open('timelapse.json', 'r') as conf:
-            if os.stat(conf).st_size:
-                PARAM = json.load(conf)
-                PARAM['path'] = _check_path(config.PATH)
+            if os.stat('timelapse.json').st_size:
+                config.PARAM = json.load(conf)
+                config.PARAM['path'] = _check_path(config.PATH)
             else:
-                PARAM = config.DEFAULT
+                config.PARAM = config.DEFAULT
 
     except (FileNotFoundError, TypeError):
         with open('timelapse.json', 'w') as conf:
-            PARAM = config.DEFAULT
-            set_config(PARAM)
+            config.PARAM = config.DEFAULT
+            set_config(config.PARAM)
 
-    if _isvalid(PARAM):
-        set_config(PARAM)
+    if _isvalid(config.PARAM):
+        set_config(config.PARAM)
     else:
         set_config(config.DEFAULT)
 
-    return PARAM
+    return config.PARAM
 
 
 def set_config(newparam):

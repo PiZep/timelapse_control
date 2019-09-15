@@ -1,0 +1,15 @@
+#!/bin/bash
+
+DHCPCD="test.txt"
+for option in "nohook wpa_supplicant" \
+    "interface wlan0" \
+    "$(printf "static ip_address=192.168.%d.10/24" $IP_ID)" \
+    "$(printf "static routers=192.168.%d.10" $IP_ID)"
+do
+    grep -q "$option" $DHCPCD && sed -ri 's:^[# ]*('"$option"'):\1:' $DHCPCD || echo $option >> $DHCPCD
+done
+
+# Turn ip forwarding in /etc/sysctl.conf
+SYSCTL="test.txt"
+pattern="net.ipv4.ip_forward="
+grep -q "$pattern" $SYSCTL && sed -ri 's:^[# ]*('"$pattern"')[0-9]:\11:' $SYSCTL || echo $option1 >> $SYSCTL
