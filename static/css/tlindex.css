@@ -4,11 +4,11 @@ html, body {
 }
 body {
   background-color: white;
-  font-family: monospace;
+  font-family: sans-serif;
   font-size: 100%;
 }
 header {
-  background-color: rgb(210, 210, 210);
+  /* background-color: rgb(210, 210, 210); */
 }
 h1 {
   font-size: 150%;
@@ -25,9 +25,12 @@ p {
   margin-block-start: 5px;
   margin-block-end: 5px;
 }
-p.comment {
-    color: rgb(200, 200, 200);
-    margin-block-start: 2px;
+.folder {
+  font-weight: bold;
+}
+.comment {
+  color: rgb(100, 100, 100);
+  margin-block-start: 2px;
   }
 
 section {
@@ -43,16 +46,16 @@ section:after {
 }
 
 .main {
-  width: 70%;
+  width: 80%;
   padding: 0%;
-  background-color: rgb(50, 50, 50);
+  background-color: rgb(210, 210, 210);
 }
 .side {
-  width: 29%;
+  width: 19%;
   height: border-box;
   overflow: hidden;
-  padding: 0 0.5rem 0 0.5rem;
-  background-color: rgb(150, 150, 150);
+  /* padding: 0 0.5rem 0 0.5rem; */
+  /* background-color: rgb(150, 150, 150); */
 }
 @media screen and (max-width: 640px) {
   .column {
@@ -69,4 +72,55 @@ div.box {
 
 input[type="number"] {
   width: 20%
+}
+
+label {
+  display: inline-block;
+  margin-right: .3rem;
+  /* width: 80%; */
+  /* text-align: right */
+}
+
+label:after {
+  border-bottom: 2px dotted #6c6c6c;
+  background-color: transparent;
+}
+
+fieldset {
+  border-radius: 1rem;
+  border-width: 0.3rem;
+  border-color: rgb(90, 180, 255);
+  margin-bottom: 1rem;
+}
+legend {
+  font-weight: bold;
+  color: rgb(0, 88, 120);
+}
+
+ul {
+  list-style: disc;
+  overflow-x: hidden;
+  padding: 0 1rem 0 1rem;
+  margin-top: 0.3rem;
+  margin-bottom: 1rem
+}
+.list {
+  display: flex;
+}
+.start {
+  flex-grow: 1;
+  display: flex
+}
+.end {
+  align-content: flex-end;
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-basis: 1rem;
+}
+.start:after {
+  content: '';
+  position: relative;
+  bottom: .5rem;
+  border-bottom: 2px dotted #8c8c8c;
+  flex-grow: 1;
 }

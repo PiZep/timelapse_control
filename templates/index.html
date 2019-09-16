@@ -20,50 +20,67 @@
       </div class="column main">
 
       <div class="column side">
-        <h2>Fréquence de prise de vue:</h2>
-        <form oninput="f.value=60/parseInt(interv.value)">
-          Intervale : <input name="interv" type="number" value="10"> [secondes]<br>
-          soit <output name="f" for="interv"></output> [img/min]<br>
-        </form>
-
-        <h2>Jours d'activité</h2>
-        <p class="comment">Si tous ou aucun cochés, tous les jours sont activés</p>
-          <form action="" method="post">
-            <div class="box">
-              <input name="all" type="checkbox" id="all">
-              <label for="all">Jours de la semaine :</label>
-              <ul style="list-style-type:none">
-                <li> 
-                  <input name="mon" type="checkbox" id="mon">
-                  <label for="mon">Lundi</label>
-                </li>
-                <li>
-                  <input name="tue" type="checkbox" id="tue">
-                  <label for="tue">Mardi</label>
-                </li>
-                <li>
-                  <input name="wed" type="checkbox" id="wed">
-                  <label for="wed">Mercredi</label>
-                </li>
-                <li>
-                  <input name="thu" type="checkbox" id="thu">
-                  <label for="thu">Jeudi</label>
-                </li>
-                <li>
-                  <input name="fri" type="checkbox" id="fri">
-                  <label for="fri">Vendredi</label>
-                </li>
-                <li>
-                  <input name="sat" type="checkbox" id="sat">
-                  <label for="sat">Samedi</label>
-                </li>
-                <li>
-                  <input name="sun" type="checkbox" id="sun">
-                  <label for="sun">Dimanche</label>
-                </li>
-              </ul>
-            </div>
+        <!-- <h2>Fréquence de prise de vue:</h2> -->
+        <fieldset>
+          <legend>Intervalle des prises de vue</legend>
+          <form oninput="f.value=60/parseInt(interv.value)">
+            Intervale : <input name="interv" type="number" value="10"> [secondes]<br>
+            soit <output name="f" for="interv"></output> [img/min]<br>
           </form>
+        </fieldset>
+
+        <!-- <h2>Paramétrage de l'activité</h2> -->
+        <form action="" method="post">
+          <fieldset>
+            <legend>Paramétrage des horaires</legend>
+            <p class="comment">Sans serveur de temps, l'option n'est pas active</p>
+            
+			<!-- Choix des jours de la semaine -->
+			<span class="list">
+				<span class="start"><label class="folder" for="all">Jours de la semaine</label></span>
+				<span class="end"><input name="all" type="checkbox" id="all"></span><br>
+            </span>
+			<small class="comment">Si tous ou aucun coché, actif tous les jours</small>
+            <ul>
+              <li class="list"> 
+                <span class="start"><label for="mon">Lundi</label></span>
+                <span class="end"><input name="mon" type="checkbox" id="mon"></span>
+              </li>
+              <li class="list">
+                <span class="start"><label for="tue">Mardi</label></span>
+                <span class="end"><input name="tue" type="checkbox" id="tue"></span>
+              </li>
+              <li class="list">
+                <span class="start"><label for="wed">Mercredi</label></span>
+                <span class="end"><input name="wed" type="checkbox" id="wed"></span>
+              </li>
+              <li class="list">
+                <span class="start"><label for="thu">Jeudi</label></span>
+                <span class="end"><input name="thu" type="checkbox" id="thu"></span>
+              </li>
+              <li class="list">
+                <span class="start"><label for="fri">Vendredi</label></span>
+                <span class="end"><input name="fri" type="checkbox" id="fri"></span>
+              </li>
+              <li class="list">
+                <span class="start"><label for="sat">Samedi</label></span>
+                <span class="end"><input name="sat" type="checkbox" id="sat"></span>
+              </li>
+              <li class="list">
+                <span class="start"><label for="sun">Dimanche</label></span>
+                <span class="end"><input name="sun" type="checkbox" id="sun"></span>
+              </li>
+            </ul>
+
+			<!-- Choix des heures de début et de fin -->
+			<label for="start">Début :</label>
+			<input type="time" id="start" name="start" required>
+			
+			<label for="start">Fin :</label>
+			<input type="time" id="stop" name="stop" required><br>
+			<small class="comment">Si "Début" = "Fin", la capture est faite en continu les jours sélectionnés.</small>
+          </fieldset>
+        </form>
 
       </div class="column side">
 
