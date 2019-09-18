@@ -7,45 +7,53 @@ import os
 # from camera_opencv import Camera
 from datetime import datetime, timedelta
 import time
-from config import *
+import config
 import tlconfig
 
 # camera = Camera()
+
+MAX_PIC = 1000
+MAX_DIR = 10
+MAIN_DIR = "timelapse"
 
 
 class TimeLapse():
     """Main TimeLapse class"""
 
-    def __init__(self, camera):
+    def __init__(self, camera, naming_func=None, *args):
         self.camera = camera
-        self.config = tlconfig.get_config()
+        self.config = tlconfig
+        self.naming = naming_func
+        self.naming_args = args
         self.last_pic = None
         self.last_shot = None
         self._count = 0
 
-    def take_picture(self, name_fun, *args, **kwargs):
+        self.config.get_config()
+
+    def take_picture(self, name_fun, *args):
         """Take a picture"""
         print("take_picture")
         self._count += 1
         if name_fun:
-            name = name_fun(*args, **kwargs)
+            name = name_fun(*args)
         else:
-            name = str(self._count) + ".jpg"
-        pic_full_path = os.path.sep.join((PATH, name))
+            name = self._default_naming()
+        pic_full_path = os.path.sep.join((config.PATH, name))
         print(pic_full_path)
-        self.camera.take_picture(pic_full_path, CAM_RES)
+        self.camera.take_picture(pic_full_path, config.CAM_RES)
         return name
 
     def delay(self):
         """Calculate the delay in second before the next picture"""
 
         print("delay")
-        next_pic = datetime.fromtimestamp(self.last_shot + INTERVAL)
+        next_pic = datetime.fromtimestamp(self.last_shot + config.INTERVAL)
 
         forecast = timedelta(hours=next_pic.hour,
                              minutes=next_pic.minute).total_seconds()
-        limit = timedelta(hours=tlconfig.END_HOUR,
-                          minutes=tlconfig.END_MIN).total_seconds()
+        limit = timedelta(hours=config.END_HOUR,
+                          minutes=config.END_MIN).total_seconds()
 
         # Calculate next day if the next forecast picture
         # is taken after the limit hour
@@ -53,29 +61,72 @@ class TimeLapse():
         d_days = 0
         if forecast > limit:
             d_days += 1
-            while not DAYS[week_day]:
+            while not config.DAYS[week_day]:
                 week_day = week_day + 1 if week_day < 6 else 0
                 d_days += 1
 
             next_pic = datetime(year=self.last_shot.year, month=next_pic.month,
                                 day=self.last_shot.day + d_days,
-                                hour=tlconfig.START['hour'],
-                                minute=tlconfig.START['minute'])
+                                hour=config.START['hour'],
+                                minute=config.START['minute'])
 
         delay = next_pic - datetime.now()
 
         print(d_days, delay.total_seconds(), self.last_shot, next_pic)
         return delay.total_seconds()
 
-    def timelapse(self, name_func, *args, **kwargs):
+    def timelapse(self):
         """Set timelapse"""
         print("timelapse")
+        self._set_path()
         while True:
+            start = time.time()
+            self.last_pic = self.take_picture(self.naming, self.naming_args)
             self.last_shot = time.time()
-            self.last_pic = self.take_picture(name_func, *args, **kwargs)
-            if TIMESET:
+            print(f"pic time: {self.last_shot},"
+                  f"method start: {start}, delay: {self.last_shot - start}")
+            if self.config['timeset']:
                 time.sleep(self.delay())
             else:
-                time.sleep(INTERVAL - self.last_shot)
-            return self.last_shot
+                time.sleep(config['interval'] - self.last_shot + start)
+            yield self.last_shot
+
+    def _set_path(self):
+        """Verify or make the required directories"""
+        path = os.path.join(config['path'], MAIN_DIR)
+        if not os.access(path, os.F_OK):
+            os.mkdir(MAIN_DIR)
+
+    def _default_naming(self):
+        """Default naming function
+
+        Register with a numbering system, creating directories on the
+        same principle. 1000 pictures is the maximum number by directory.
+        The maximum number of directories is 10.
+        """
+
+        print("_default_naming()")
+        for d in range(1, MAX_DIR + 1):
+            count = 1
+            dir_name = os.path.join(MAIN_DIR, str(d).zfill(2))
+            if not os.access(dir_name, os.F_OK):
+                print(f"Making a new directory: {str(d).zfill(2)}")
+                os.mkdir(dir_name)
+                break
+            else:
+                abs_path = os.path.abspath(dir_name)
+                count = len([f for f in os.listdir(dir_name)
+                             if os.path.isfile(os.path.join(abs_path, f))# and
+                             # os.path.splitext(os.path.join(abs_path, f)) ==
+                             # ".jpg"]) + 1
+                             ]) + 1
+                if not count >= MAX_PIC:
+                    print(f"Saving new pic:"
+                          f"{str(d).zfill(2) +'_' + str(count).zfill(3)}")
+                    break
+
+        name = os.path.join(dir_name, '_'.join((str(d).zfill(2),
+                                                str(count).zfill(3))))
+        self._count += self._count
+        return name + ".jpg"
 

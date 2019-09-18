@@ -7,38 +7,41 @@ import os
 import config
 
 # camera = Camera()
+
+OPTIONS = set(config._DEFAULT.keys())
 PARAM = {}
 
 
-def _isvalid(param, key=None):
+def _isvalid(key=None):
     """Check the structure validity of [param]"""
     isvalid = True
     error = ""
-    options = {"timeset", "res", "path", "days", "start", "end", "lastpic"}
-    if key and key in options:
+    if key and key in OPTIONS:
         keys = {key}
     else:
-        keys = options
+        keys = OPTIONS
 
     for k in keys:
-        if k not in param:
+        if k not in PARAM:
             isvalid = False
-            error = f"key {k} is not an option"
+            error = f'The "{k}" key is not optional'
             break
         else:
             if k == 'res':
-                if not ('width' in param[k] and 'height' in param[k]):
+                if not ('width' in PARAM[k] and
+                        'height' in PARAM[k]):
                     isvalid = False
                     error = "Wrong resolution setting"
                     break
             elif k == "days":
-                if not len(param[k]) == 7 and all(isinstance(d, bool)
-                                                  for d in param[k]):
+                if (not len(PARAM[k]) == 7 and
+                        all(isinstance(d, bool) for d in PARAM[k])):
                     isvalid = False
                     error = "Wrong days setting"
                     break
             elif k in ('start', 'end'):
-                if not ('hour' in param[k] and 'minute' in param[k]):
+                if not ('hour' in PARAM[k] and
+                        'minute' in PARAM[k]):
                     isvalid = False
                     error = "Wrong hour setting"
                     break
@@ -57,43 +60,42 @@ def _check_path(path):
 
 def get_config():
     """Get the actual configuration"""
+    global PARAM
     try:
         with open('timelapse.json', 'r') as conf:
             if os.stat('timelapse.json').st_size:
-                config.PARAM = json.load(conf)
-                config.PARAM['path'] = _check_path(config.PATH)
+                PARAM = json.load(conf)
+                PARAM['path'] = _check_path(config.PATH)
             else:
-                config.PARAM = config.DEFAULT
+                PARAM = config._DEFAULT
 
     except (FileNotFoundError, TypeError):
         with open('timelapse.json', 'w') as conf:
-            config.PARAM = config.DEFAULT
-            set_config(config.PARAM)
+            PARAM = config._DEFAULT
 
-    if _isvalid(config.PARAM):
-        set_config(config.PARAM)
-    else:
-        set_config(config.DEFAULT)
+    for k in OPTIONS:
+        PARAM[k] = PARAM[k] if _isvalid(k) else config._DEFAULT[k]
 
-    return config.PARAM
+    set_config()
+    return PARAM
 
 
-def set_config(newparam):
+def set_config():
     """Write back new parameters"""
     with open('timelapse.json', 'w') as conf:
-        config.TIMESET = newparam['timeset']
-        config.CAM_RES = (newparam['res']['height'], newparam['res']['width'])
-        config.INTERVAL = newparam['interval']
-        config.PATH = _check_path(newparam['path'])
-        config.DAYS = newparam['days']
-        config.START_HOUR = newparam['start']['hour']
-        config.START_MIN = newparam['start']['minute']
-        config.END_HOUR = newparam['end']['hour']
-        config.END_MIN = newparam['end']['minute']
-        config.LAST_PIC = newparam['lastpic']
-        json.dump(newparam, conf, indent=4)
+        config.TIMESET = PARAM['timeset']
+        config.CAM_RES = (PARAM['res']['height'], PARAM['res']['width'])
+        config.INTERVAL = PARAM['interval']
+        config.PATH = _check_path(PARAM['path'])
+        config.DAYS = PARAM['days']
+        config.START_HOUR = PARAM['start']['hour']
+        config.START_MIN = PARAM['start']['minute']
+        config.END_HOUR = PARAM['end']['hour']
+        config.END_MIN = PARAM['end']['minute']
+        config.LAST_PIC = PARAM['lastpic']
+        json.dump(PARAM, conf, indent=4)
 
 
-# if __name__ == "__main__":
-#     set_config(PARAM)
+if __name__ == "__main__":
+    set_config()
 

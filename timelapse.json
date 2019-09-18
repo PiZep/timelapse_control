@@ -5,7 +5,7 @@
         "height": 240
     },
     "interval": 60,
-    "path": "/home/pierre/projects/timelapse_control",
+    "path": "/home/pi/projets/timelapse_control",
     "days": [
         false,
         false,

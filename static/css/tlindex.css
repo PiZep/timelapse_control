@@ -31,7 +31,7 @@ p {
 .comment {
   color: rgb(100, 100, 100);
   margin-block-start: 2px;
-  }
+}
 
 section {
   height: max-content;
@@ -46,18 +46,33 @@ section:after {
 }
 
 .main {
+	position: relative;
   width: 80%;
   padding: 0%;
   background-color: rgb(210, 210, 210);
 }
+/* Image overlapping */
+.main img {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	min-height: 25em;
+	color: white
+}
+.main .streamswitch {
+	position: absolute;
+	top: 0.5em;
+	left: 0.5em;
+}
+
 .side {
-  width: 19%;
+  width: 20%;
   height: border-box;
   overflow: hidden;
   /* padding: 0 0.5rem 0 0.5rem; */
   /* background-color: rgb(150, 150, 150); */
 }
-@media screen and (max-width: 640px) {
+@media screen and (max-width: 512px) {
   .column {
     width: 100%;
   }
@@ -123,4 +138,49 @@ ul {
   bottom: .5rem;
   border-bottom: 2px dotted #8c8c8c;
   flex-grow: 1;
+}
+
+/** streamswitch
+ -------------------------------------*/
+
+.streamswitch input {
+  position: absolute;
+  opacity: 0;
+}
+
+/**
+ * 1. Adjust this to size
+ */
+
+.streamswitch {
+  position: relative;
+  top: 5px;
+  left: 5px;
+  display: inline-block;
+  font-size: 1.5rem; /* 1 */
+  height: 1em;
+  width: 2em;
+  background: #BDB9A6;
+  border-radius: 1rem;
+}
+/* div .streamswitch { */
+	/* position: relative; */
+	/* top: 1em; */
+	/* left: 1em; */
+/* } */
+.streamswitch div {
+  height: 1em;
+  width: 1em;
+  border-radius: 1em;
+  background: #FFF;
+  box-shadow: 0 0.1em 0.3em rgba(0,0,0,0.3);
+  -webkit-transition: all 300ms;
+     -moz-transition: all 300ms;
+          transition: all 300ms;
+}
+
+.streamswitch input:checked + div {
+  -webkit-transform: translate3d(100%, 0, 0);
+     -moz-transform: translate3d(100%, 0, 0);
+          transform: translate3d(100%, 0, 0);
 }

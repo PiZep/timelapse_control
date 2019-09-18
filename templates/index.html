@@ -15,8 +15,13 @@
 
     <section>
 
-      <div class="column main">
-        <center><img src="{{ url_for('video_feed') }}" alt="Vidéo en streaming ou dernière prise de vue" style="max-width: 100%; height: auto; color: white"></center>
+		<div class="column main">
+				<img src="{{ url_for('video_feed') }}" alt="Vidéo en streaming ou dernière prise de vue">
+				<label class="streamswitch" for="togglestream">
+				<input type="checkbox" name="togglestream" id="togglestream"> <div></div>
+				Streaming</label>
+		</div>
+
       </div class="column main">
 
       <div class="column side">
@@ -73,10 +78,10 @@
             </ul>
 
 			<!-- Choix des heures de début et de fin -->
-			<label for="start">Début :</label>
+			<label for="start">De :</label>
 			<input type="time" id="start" name="start" required>
 			
-			<label for="start">Fin :</label>
+			<label for="start">à :</label>
 			<input type="time" id="stop" name="stop" required><br>
 			<small class="comment">Si "Début" = "Fin", la capture est faite en continu les jours sélectionnés.</small>
           </fieldset>

@@ -1,0 +1,60 @@
+#!/bin/usr/env python3
+# coding: utf-8
+
+"""File for a class wrapper arround json"""
+import json
+from importlib import import_module
+from os import stat
+
+
+class ConfigJSON:
+    """Simple wrapper arround json"""
+
+    # _configdict = {}
+    # _configfile = ''
+    # _module = None
+    # _default = {}
+
+    def __init__(self, confmodule):
+        self._module = import_module(confmodule)
+        self._configfile = confmodule + ".json"
+        self._default = self._module._DEFAULT
+        self._configdict = self._get_config()
+        # self.tree = self._get_structure()
+        self.keys = self._default.keys()
+
+    def __del__(self):
+        self.set_config()
+        print("Configuration saved")
+
+    # def _get_structure(self):
+    #     """Return the structure of the config file"""
+
+    def _get_config(self):
+        """Get the actual configuration"""
+        try:
+            with open(self._configfile) as conf:
+                if stat(self._configfile).st_size:
+                    self._configdict = json.load(conf)
+                else:
+                    self._configdict = self._default
+
+        except (FileNotFoundError, TypeError):
+            with open('timelapse.json', 'w') as conf:
+                self._configdict = self._default
+
+        for k in self.keys:
+            self._configdict[k] = (self._configdict[k] if
+                                   self.module._isvalid(k) else
+                                   self._default[k])
+
+        self.set_config()
+        return self._configdict
+
+    def set_config(self):
+        """Write back new parameters"""
+        with open('timelapse.json', 'w') as conf:
+            
+
+            json.dump(PARAM, conf, indent=4)
+
