@@ -85,15 +85,16 @@ class TimeLapse():
             self.last_shot = time.time()
             print(f"pic time: {self.last_shot},"
                   f"method start: {start}, delay: {self.last_shot - start}")
-            if self.config['timeset']:
+            if self.config.PARAM['timeset']:
                 time.sleep(self.delay())
             else:
-                time.sleep(config['interval'] - self.last_shot + start)
+                time.sleep(self.config.PARAM['interval']
+                           - self.last_shot + start)
             yield self.last_shot
 
     def _set_path(self):
         """Verify or make the required directories"""
-        path = os.path.join(config['path'], MAIN_DIR)
+        path = os.path.join(self.config.PARAM['path'], MAIN_DIR)
         if not os.access(path, os.F_OK):
             os.mkdir(MAIN_DIR)
 

@@ -1,10 +1,10 @@
 {
     "timeset": false,
     "res": {
-        "width": 320,
-        "height": 240
+        "width": 1920,
+        "height": 1080
     },
-    "interval": 60,
+    "interval": 5,
     "path": "/home/pi/projets/timelapse_control",
     "days": [
         false,
