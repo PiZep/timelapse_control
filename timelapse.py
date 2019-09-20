@@ -86,10 +86,11 @@ class TimeLapse():
             print(f"pic time: {self.last_shot},"
                   f"method start: {start}, delay: {self.last_shot - start}")
             if self.config.PARAM['timeset']:
-                time.sleep(self.delay())
+                delay = self.delay()
             else:
-                time.sleep(self.config.PARAM['interval']
-                           - self.last_shot + start)
+                delay = self.config.PARAM['interval'] - self.last_shot + start
+            delay = delay if delay >= 0 else 0
+            time.sleep(delay)
             yield self.last_shot
 
     def _set_path(self):

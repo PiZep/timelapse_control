@@ -1,0 +1,120 @@
+#!/bin/usr/env python3
+# coding: utf-8
+
+"""File for a class wrapper arround json"""
+import json
+from importlib import import_module, util
+from os import stat
+from inspect import ismodule
+from collections import namedtuple
+# from dotdict import DotDict
+
+
+class ConfigJSON:
+    """Simple config manager using json
+
+    The constructor can take one ``config`` parameter.
+    ``config`` can refer to a module or a module name.
+    If this is the case, it should contain a least a ``_DEFAULT``
+    config dict.
+
+    :param config: A dict, a module, a module name or "stringed" dict
+    :type config: dict, string
+
+    :Example:
+
+    >>>from configmodule import ConfigJSON
+    >>>d = {'param1': 1, 'param2': 2}
+    >>>s = str(d)
+    >>>c1 = ConfigJSON(d)
+    >>>c2 = ConfigJSON('config')
+    >>>import config
+    >>>c3 = ConfigJSON(config)
+    >>>c4 = ConfigJSON(s)
+    """
+    # conf = {}
+    # _confjson = ''
+    # _module = None
+    # _default = {}
+
+    ConfTuple = namedtuple('ConfTuple', ['type', 'len', 'subtypes'])
+
+    class IterConf(ConfTuple):
+        """Structure stocking information about iterables in config"""
+
+        def __init__(self, data):
+            super().__init__(self, 'IterConf', ['type', 'len', 'subtypes'])
+            self.type = type(data)
+            self.len = len(data)
+            self.subtypes = type(data)(type(x) for x in data)
+
+        # def __repr__(self):
+        #     return (f"{{'type': {self.type},"
+        #             f"'len': {self.len},"
+        #             f"'subtypes': {self.subtypes}}}")
+
+    def __init__(self, config=None):
+        has_module = False
+        if config:
+            if ismodule(config):
+                import config as conf_module
+                has_module = True
+            elif util.find_spec(config):
+                conf_module = import_module(config)
+                has_module = True
+            elif isinstance(config, dict) or isinstance(eval(config), dict):
+                self.conf = eval(str(config))
+            else:
+                config = "config"
+
+        self._confjson = "." + config + ".json"
+
+        if self.__module:
+            self._default = (self.__module._DEFAULT if
+                             hasattr(self.__module, '_DEFAULT') else self.conf)
+        self.conf, self._struct = self._get_config()
+        self.keys = self._default.keys()
+
+    def __del__(self):
+        self.set_config()
+        print("Configuration saved")
+
+    def __module_is_valid(self, module):
+        """Check config module validity"""
+        
+
+    def __get_structure(self, conf):
+        """Return the structure of the config dictionary"""
+        struct = {k: (self.__get_structure(i) if isinstance(i, dict)
+                      else self.IterConf(i) if not isinstance(i, str)
+                      and hasattr(i, '__iter__') else type(i))
+                  for (k, i) in conf.items()}
+        return struct
+
+    def _get_config(self):
+        """Get the actual configuration"""
+        self._struct = self.__get_structure(self._default)
+        try:
+            with open(self._confjson) as conf:
+                if stat(self._confjson).st_size:
+                    self.conf = json.load(conf)
+                else:
+                    self.conf = self._default
+
+        except (FileNotFoundError, TypeError):
+            with open(self._confjson, 'w') as conf:
+                self.conf = self._default
+
+        for k in self.conf.keys():
+            self.conf[k] = (self.conf[k] if
+                            self.__module._isvalid(k) else
+                            self._default[k])
+
+        self.set_config()
+        return self.conf, self._struct
+
+    def set_config(self):
+        """Write back new parameters"""
+        with open(self._confjson, 'w') as conf:
+            json.dump(self.conf, conf, indent=4)
+
