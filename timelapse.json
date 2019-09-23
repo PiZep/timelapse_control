@@ -4,7 +4,7 @@
         "width": 1080,
         "height": 1920
     },
-    "interval": 15,
+    "interval": 90,
     "path": "/home/pi/projets/timelapse_control",
     "days": [
         false,

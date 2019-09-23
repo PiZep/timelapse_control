@@ -6,7 +6,7 @@ _DEFAULT = {"timeset": False,
             "res": (320, 240),
             "interval": 60,
             "path": "",
-            "days": (False) * 7,
+            "days": [False] * 7,
             "start": {"hour": 0, "minute": 0},
             "end": {"hour": 0, "minute": 0},
             "lastpic": ""
@@ -44,6 +44,7 @@ def _isvalid(param, key=None):
         keys = OPTIONS
 
     for k in keys:
+        print(f'in configtest: {k}={param[k]}')
         if k not in param:
             isvalid = False
             # error = f'The "{k}" key is not optional'
