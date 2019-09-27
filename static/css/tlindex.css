@@ -103,8 +103,11 @@ label:after {
 }
 
 fieldset {
-  border-radius: 1rem;
-  border-width: 0.3rem;
+  border-top-width: 0.2rem;
+  border-left-width: 0.2rem;
+  border-right-style: none;
+  border-bottom-style: hidden;
+  border-radius: 0.5rem;
   border-color: rgb(90, 180, 255);
   margin-bottom: 1rem;
 }

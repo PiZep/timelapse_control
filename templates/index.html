@@ -2,37 +2,38 @@
 <html lang="fr">
   <head>
     <title>Contrôle de la caméra</title>
-    <link rel="stylesheet" href="../static/css/tlindex.css" media="all" type="text/css">
-    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/tlindex.css') }}" media="all" type="text/css"> -->
+    <!-- <link rel="stylesheet" href="../static/css/tlindex.css" media="all" type="text/css"> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tlindex.css') }}" media="all" type="text/css">
+  <script type="text/javascript" src="{{ url_for('static', filename='js/tlform.js') }}"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
 
   <body>
 
-    <script type="text/javascript">
-      function convertToImgPerMin(interval) {
-        document.querySelector("#freq").innerHTML = 60/interval;
-      }
-    </script>
+    <!-- <script type="text/javascript"> -->
+    <!--   function convertToImgPerMin(interval) { -->
+    <!--     document.querySelector("#freq").innerHTML = 60/interval; -->
+    <!--   } -->
+    <!-- </script> -->
 
-    <script type="text/javascript">
-      window.onload = function(event) {
-        convertToImgPerMin(document.getElementById('interval').value);
-        showOrHide('block');
-      }
-    </script>
+    <!-- <script type="text/javascript"> -->
+    <!--   window.onload = function(event) { -->
+    <!--     convertToImgPerMin(document.getElementById('interval').value); -->
+    <!--     showOrHide('block'); -->
+    <!--   } -->
+    <!-- </script> -->
 
-    <script>
-      function showOrHide(block) {
-        var checkBox = document.getElementById("days");
-        if (checkBox.checked == true) {
-          visibility = "block";
-        } else {
-          visibility = "none";
-        }
-        document.getElementById(block).style.display = visibility;
-      }
-    </script>
+    <!-- <script> -->
+    <!--   function showOrHide(block) { -->
+    <!--     var checkBox = document.getElementById("days"); -->
+    <!--     if (checkBox.checked == true) { -->
+    <!--       visibility = "block"; -->
+    <!--     } else { -->
+    <!--       visibility = "none"; -->
+    <!--     } -->
+    <!--     document.getElementById(block).style.display = visibility; -->
+    <!--   } -->
+    <!-- </script> -->
 
     <header>
       <h1>Contrôle de la caméra</h1>
