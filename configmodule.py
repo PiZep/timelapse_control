@@ -9,7 +9,7 @@ from inspect import ismodule
 from dotdict import DotDict
 
 
-class ConfigJSON(DotDict):
+class ConfigJSON:
     """Simple config manager using json
 
     The constructor can take one ``config`` parameter.
@@ -46,33 +46,33 @@ class ConfigJSON(DotDict):
             self['len'] = len(data)
             self['subtypes'] = type(data)(type(x) for x in data)
 
-        # def __repr__(self):
-        #     return (f"{{'type': {self.type},"
-        #             f"'len': {self.len},"
-        #             f"'subtypes': {self.subtypes}}}")
-
     def __init__(self, config=None):
+        # print(f"{config}")
         if config:
+            # self._module is set only with a DEFAULT attribute
             self._module = self._getmodule(config)
         else:
             config = "config"
 
-        self._confjson = config + ".json"
-
         if self._module:
-            # self._module is set only with a _DEFAULT attribute
-            self._default = self._module._DEFAULT
+            self._default = self._module.DEFAULT
+            self._confjson = self._module.__name__ + '.json'
+            self.conf = DotDict(self._getconfig())
+        elif isinstance(config, str):
+            if path.isfile(config + '.json'):
+                self._confjson = config + ".json"
+            elif isinstance(eval(config), dict):
+                self._default = self.conf = config
+        elif isinstance(config, dict):
+            self._default = self.conf = eval(str(config))
         else:
-            if isinstance(config, dict) or isinstance(eval(config), dict):
-                self._default = eval(str(config))
-            elif path.isfile(config + '.json'):
-                self.conf = self._getconfig()
+            self._default = self.conf = {}
 
-        self.conf = DotDict(self._getconfig())
-        # self.save()
-        print(self.conf, self._default)
+        print(f'conf{self.conf}\ndefault{self._default}')
+        self._struct = {}
         self._struct = self._getstructure(self._default)
         self.keys = self._default.keys()
+        self.save()
 
     def __del__(self):
         self.save()
@@ -80,34 +80,37 @@ class ConfigJSON(DotDict):
 
     def _getmodule(self, module):
         """Check config module validity"""
-        conf_module = None
         if ismodule(module):
-            import config as conf_module
+            conf_module = module
+            # print(f"module importé: {conf_module}")
         elif util.find_spec(module):
             conf_module = import_module(module)
+            # print("module importé avec importlib")
 
-        if not hasattr(conf_module, '_DEFAULT'):
+        if not hasattr(conf_module, 'DEFAULT'):
+            # print("module désimporté: {conf_module} "
+            #       f"{hasattr(conf_module, 'DEFAULT')}")
             conf_module = None
 
         return conf_module
 
     def _getstructure(self, *args, **kwargs):
         """Return the structure of the config dictionary"""
-        struct = self._struct
+        struct = self._struct if self._struct else {}
         for arg in args:
-            print(arg)
+            print(f'in _getstructure: {arg}')
             for (k, v) in arg.items():
-                print(f'{k}: {v}')
+                # print(f'{k}: {v}')
                 if isinstance(v, dict):
                     struct[k] = self._getstructure(v)
                 elif not isinstance(v, str) and hasattr(v, '__iter__'):
                     struct[k] = self.IterConf(v)
                 else:
                     struct[k] = type(v)
-            # struct = {k: (self._getstructure(v) if isinstance(v, dict)
-            #               else self.IterConf(v) if not isinstance(v, str)
-            #               and hasattr(v, '__iter__') else type(v))
-            #           for (k, v) in args.items()}
+                # struct = {k: (self._getstructure(v) if isinstance(v, dict)
+                #               else self.IterConf(v) if not isinstance(v, str)
+                #               and hasattr(v, '__iter__') else type(v))
+                #           for (k, v) in arg.items()}
         if kwargs:
             for (k, v) in kwargs.items():
                 if isinstance(v, dict):
@@ -131,36 +134,20 @@ class ConfigJSON(DotDict):
             with open(self._confjson, 'w') as conf:
                 self.conf = self._default
 
-        print(self.conf)
+        # print(self.conf)
         for k in self.conf.keys():
-            print(f'in configmodule: {k}')
-            self.conf[k] = (self.conf[k] if
-                            self._module._isvalid(self.conf, k) else
-                            self._default[k])
+            try:
+                print(f'in configmodule, try: {k}')
+                self._module._isvalid(self.conf, k)
+                self.conf[k] = self.conf[k]
+            except TypeError:
+                print(f'in configmodule, error: {k}')
+                self.conf[k] = self._default[k]
 
         return self.conf
 
-    # def save(self):
-    #     """Write back new parameters"""
-    #     with open(self._confjson, 'w') as conf:
-    #         json.dump(self.conf, conf, indent=4)
-
-    # def __getattr__(self, attr):
-    #     return self.conf.get(attr)
-
-    # def __setattr__(self, key, value):
-    #     self.conf.__setitem__(key, value)
-    #     self._getstructure(key=value)
-
-    # def __setitem__(self, key, value):
-    #     self.conf.__setitem__(key, value)
-    #     self._struct(key=value)
-
-    # def __delattr__(self, item):
-    #     self.conf.__delitem__(item)
-    #     del self._struct[item]
-
-    # def __delitem__(self, key):
-    #     super(DotDict, self).__delitem__(key)
-    #     del self.__dict__[key]
+    def save(self):
+        """Write back new parameters"""
+        with open(self._confjson, 'w') as conf:
+            json.dump(self.conf, conf, indent=4)
 

@@ -3,11 +3,36 @@
   <head>
     <title>Contrôle de la caméra</title>
     <link rel="stylesheet" href="../static/css/tlindex.css" media="all" type="text/css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/tlindex.css') }}" media="all" type="text/css">
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/tlindex.css') }}" media="all" type="text/css"> -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
 
   <body>
+
+    <script type="text/javascript">
+      function convertToImgPerMin(interval) {
+        document.querySelector("#freq").innerHTML = 60/interval;
+      }
+    </script>
+
+    <script type="text/javascript">
+      window.onload = function(event) {
+        convertToImgPerMin(document.getElementById('interval').value);
+        showOrHide('block');
+      }
+    </script>
+
+    <script>
+      function showOrHide(block) {
+        var checkBox = document.getElementById("days");
+        if (checkBox.checked == true) {
+          visibility = "block";
+        } else {
+          visibility = "none";
+        }
+        document.getElementById(block).style.display = visibility;
+      }
+    </script>
 
     <header>
       <h1>Contrôle de la caméra</h1>
@@ -15,80 +40,65 @@
 
     <section>
 
-		<div class="column main">
-				<img src="{{ url_for('video_feed') }}" alt="Vidéo en streaming ou dernière prise de vue">
-				<label class="streamswitch" for="togglestream">
-				<input type="checkbox" name="togglestream" id="togglestream"> <div></div>
-				Streaming</label>
-		</div>
+      <div class="column main">
+        <!-- <form action="" method="post"> -->
+          <img src="{{ url_for('video_feed') }}" alt="Vidéo en streaming ou dernière prise de vue">
+          <label class="streamswitch" for="togglestream"> {{ form.stream }} <div></div>
+            Streaming</label>
+        <!-- </form> -->
+      </div>
 
       </div class="column main">
 
       <div class="column side">
         <!-- <h2>Fréquence de prise de vue:</h2> -->
-        <fieldset>
-          <legend>Intervalle des prises de vue</legend>
-          <form oninput="f.value=60/parseInt(interv.value)">
-            Intervale : <input name="interv" type="number" value="10"> [secondes]<br>
-            soit <output name="f" for="interv"></output> [img/min]<br>
-          </form>
-        </fieldset>
-
-        <!-- <h2>Paramétrage de l'activité</h2> -->
+        <!-- <form action="" method="post" oninput="f.value=60/parseInt(interv.value)"> -->
         <form action="" method="post">
+          <fieldset>
+            <legend>Intervalle des prises de vue</legend>
+            Intervale : {{ form.interval(id="interval", size=15, oninput="convertToImgPerMin(value)") }} sec.<br>
+            <!-- soit <output class="commet" name="f" for="interv"></output> img/min<br> -->
+            soit <span id="freq"></span> img/min<br>
+          </fieldset>
+
+          <!-- <h2>Paramétrage de l'activité</h2> -->
           <fieldset>
             <legend>Paramétrage des horaires</legend>
             <p class="comment">Sans serveur de temps, l'option n'est pas active</p>
-            
-			<!-- Choix des jours de la semaine -->
-			<span class="list">
-				<span class="start"><label class="folder" for="all">Jours de la semaine</label></span>
-				<span class="end"><input name="all" type="checkbox" id="all"></span><br>
+
+            <!-- Choix des jours de la semaine -->
+            <span class="list">
+              <span class="start">{{ form.timeset.label }}</span>
+              <span class="end">{{ form.timeset(id="days", onclick="showOrHide('block')") }}</span><br>
             </span>
-			<small class="comment">Si tous ou aucun coché, actif tous les jours</small>
-            <ul>
+            <small class="comment">Si tous ou aucun coché, actif tous les jours</small><br>
+            <ul id="block">
+              {% for day in form.days %}
               <li class="list"> 
-                <span class="start"><label for="mon">Lundi</label></span>
-                <span class="end"><input name="mon" type="checkbox" id="mon"></span>
+                <span class="start">{{ day.label }}</span>
+                <span class="end">{{ day }}</span>
               </li>
-              <li class="list">
-                <span class="start"><label for="tue">Mardi</label></span>
-                <span class="end"><input name="tue" type="checkbox" id="tue"></span>
-              </li>
-              <li class="list">
-                <span class="start"><label for="wed">Mercredi</label></span>
-                <span class="end"><input name="wed" type="checkbox" id="wed"></span>
-              </li>
-              <li class="list">
-                <span class="start"><label for="thu">Jeudi</label></span>
-                <span class="end"><input name="thu" type="checkbox" id="thu"></span>
-              </li>
-              <li class="list">
-                <span class="start"><label for="fri">Vendredi</label></span>
-                <span class="end"><input name="fri" type="checkbox" id="fri"></span>
-              </li>
-              <li class="list">
-                <span class="start"><label for="sat">Samedi</label></span>
-                <span class="end"><input name="sat" type="checkbox" id="sat"></span>
-              </li>
-              <li class="list">
-                <span class="start"><label for="sun">Dimanche</label></span>
-                <span class="end"><input name="sun" type="checkbox" id="sun"></span>
-              </li>
+              {% endfor %}
             </ul>
 
-			<!-- Choix des heures de début et de fin -->
-			<label for="start">De :</label>
-			<input type="time" id="start" name="start" required>
-			
-			<label for="start">à :</label>
-			<input type="time" id="stop" name="stop" required><br>
-			<small class="comment">Si "Début" = "Fin", la capture est faite en continu les jours sélectionnés.</small>
+            <!-- Choix des heures de début et de fin -->
+            <label for="start">De :</label>
+            <input type="time" id="start" name="start">
+
+            <label for="start">à :</label>
+            <input type="time" id="stop" name="stop"><br>
+            <small class="comment">Si "Début" = "Fin", la capture est faite en continu les jours sélectionnés.</small>
+          </fieldset>
+          <fieldset>
+            <legend>Validation</legend>
+            <!-- {{ form.path }}<br> -->
+            {{ form.submit }}
           </fieldset>
         </form>
 
       </div class="column side">
 
     </section>
+
   </body>
 </html>

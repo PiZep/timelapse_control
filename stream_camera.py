@@ -80,10 +80,6 @@ class BaseCamera():
     last_access = 0  # time of last client access to the camera
     event = CameraEvent()
 
-    def __init__(self, video=False):
-        if video:
-            self.perm_stream()
-
     def perm_stream(self):
         """Start or stop the streaming thread"""
         if BaseCamera.thread is None:

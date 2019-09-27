@@ -4,9 +4,10 @@
         1920,
         1080
     ],
-    "interval": 60,
-    "path": "",
-    "days": [false,
+    "interval": 15,
+    "path": "/home/pi/projets/timelapse_control",
+    "days": [
+        false,
         false,
         false,
         false,

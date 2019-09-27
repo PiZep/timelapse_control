@@ -13,7 +13,7 @@ class Camera(BaseCamera):
             # let camera warm up
             time.sleep(2)
 
-            camera.resolution = (640, 480)
+            camera.resolution = (800, 450)
             stream = io.BytesIO()
             for _ in camera.capture_continuous(stream, 'jpeg',
                                                use_video_port=True):

@@ -2,15 +2,15 @@
 
 import os
 
-_DEFAULT = {"timeset": False,
-            "res": (320, 240),
-            "interval": 60,
-            "path": "",
-            "days": [False] * 7,
-            "start": {"hour": 0, "minute": 0},
-            "end": {"hour": 0, "minute": 0},
-            "lastpic": ""
-            }
+DEFAULT = {"timeset": False,
+           "res": (320, 240),
+           "interval": 60,
+           "path": "",
+           "days": [False] * 7,
+           "start": {"hour": 0, "minute": 0},
+           "end": {"hour": 0, "minute": 0},
+           "lastpic": ""
+           }
 
 # TIMESET = _DEFAULT['timeset']
 # CAM_RES = (_DEFAULT['res']['width'], _DEFAULT['res']['height'])
@@ -23,7 +23,7 @@ _DEFAULT = {"timeset": False,
 # END_MIN = _DEFAULT['end']['minute']
 # LAST_PIC = _DEFAULT['lastpic']
 
-OPTIONS = set(_DEFAULT.keys())
+OPTIONS = set(DEFAULT.keys())
 
 
 def _check_path(path):
@@ -47,28 +47,30 @@ def _isvalid(param, key=None):
         print(f'in configtest: {k}={param[k]}')
         if k not in param:
             isvalid = False
-            # error = f'The "{k}" key is not optional'
+            error = f'The "{k}" key is not optional'
             break
         else:
             if k == 'res':
-                continue
-                # if not ('width' in param[k] and
-                #         'height' in param[k]):
-                #     isvalid = False
-                #     # error = "Wrong resolution setting"
-                #     break
+                # continue
+                if not (('width' in param[k] and
+                         'height' in param[k]) or len(param[k]) == 2):
+                    isvalid = False
+                    error = "Wrong resolution setting"
+                    break
             elif k == "days":
                 if (not len(param[k]) == 7 and
                         all(isinstance(d, bool) for d in param[k])):
                     isvalid = False
-                    # error = "Wrong days setting"
+                    error = "Wrong days setting"
                     break
             elif k in ('start', 'end'):
-                if not (param[k]['hour'] > 24 and param[k]['minute'] > 59):
+                if (len(param[k]) != 2 or
+                        (param[k]['hour'] > 24 or param[k]['minute'] > 59)):
                     isvalid = False
-                    # error = "Wrong hour setting"
+                    error = "Wrong hour setting"
                     break
-    # if not isvalid:
-    #     raise TypeError(error)
+
+    if not isvalid:
+        raise TypeError(error)
     return isvalid
 

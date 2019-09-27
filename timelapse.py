@@ -7,8 +7,7 @@ import os
 # from camera_opencv import Camera
 from datetime import datetime, timedelta
 import time
-import config
-import tlconfig
+from configmodule import ConfigJSON
 
 # camera = Camera()
 
@@ -17,19 +16,23 @@ MAX_DIR = 10
 MAIN_DIR = "timelapse"
 
 
-class TimeLapse():
+class TimeLapse(ConfigJSON):
     """Main TimeLapse class"""
 
-    def __init__(self, camera, naming_func=None, *args):
+    def __init__(self, camera, config=None, naming_func=None, *args):
+        super().__init__(config)
         self.camera = camera
-        self.config = tlconfig
         self.naming = naming_func
         self.naming_args = args
         self.last_pic = None
         self.last_shot = None
         self._count = 0
 
-        self.config.get_config()
+        # self.config = self._getconfig()
+        # self.config = super(ConfigJSON, self)._getconfig()
+
+    def __del__(self):
+        super().__del__()
 
     def take_picture(self, name_fun, *args):
         """Take a picture"""
