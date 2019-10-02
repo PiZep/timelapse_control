@@ -3,6 +3,7 @@
 
 """File for a class wrapper arround json"""
 import json
+import logging
 from importlib import import_module, util
 from os import stat, path
 from inspect import ismodule
@@ -47,7 +48,7 @@ class ConfigJSON:
             self['subtypes'] = type(data)(type(x) for x in data)
 
     def __init__(self, config=None):
-        # print(f"{config}")
+        self.logger = logging.getLogger('server_app.configmodule.ConfigJSON')
         if config:
             # self._module is set only with a DEFAULT attribute
             self._module = self._getmodule(config)
@@ -68,27 +69,28 @@ class ConfigJSON:
         else:
             self._default = self.conf = {}
 
-        print(f'conf{self.conf}\ndefault{self._default}')
         self._struct = {}
         self._struct = self._getstructure(self._default)
         self.keys = self._default.keys()
         self.save()
+        self.logger.debug('__init__')
 
     def __del__(self):
         self.save()
-        print("Configuration saved")
+        self.logger.debug("__del__")
 
     def _getmodule(self, module):
         """Check config module validity"""
+        self.logger.debug('_getmodule')
         if ismodule(module):
             conf_module = module
-            # print(f"module importé: {conf_module}")
+            # self.logger.debug(f"module importé: {conf_module}")
         elif util.find_spec(module):
             conf_module = import_module(module)
-            # print("module importé avec importlib")
+            # self.logger.debug("module importé avec importlib")
 
         if not hasattr(conf_module, 'DEFAULT'):
-            # print("module désimporté: {conf_module} "
+            # self.logger.debug("module désimporté: {conf_module} "
             #       f"{hasattr(conf_module, 'DEFAULT')}")
             conf_module = None
 
@@ -96,11 +98,12 @@ class ConfigJSON:
 
     def _getstructure(self, *args, **kwargs):
         """Return the structure of the config dictionary"""
+        self.logger.debug('_getstructure')
         struct = self._struct if self._struct else {}
         for arg in args:
-            print(f'in _getstructure: {arg}')
+            self.logger.debug(f'in _getstructure: {arg}')
             for (k, v) in arg.items():
-                # print(f'{k}: {v}')
+                # self.logger.debug(f'{k}: {v}')
                 if isinstance(v, dict):
                     struct[k] = self._getstructure(v)
                 elif not isinstance(v, str) and hasattr(v, '__iter__'):
@@ -123,6 +126,8 @@ class ConfigJSON:
 
     def _getconfig(self):
         """Get the actual configuration"""
+        self.logger.debug('_getconfig')
+        # struct = self._struct if self._struct else {}
         try:
             with open(self._confjson) as conf:
                 if stat(self._confjson).st_size:
@@ -134,20 +139,21 @@ class ConfigJSON:
             with open(self._confjson, 'w') as conf:
                 self.conf = self._default
 
-        # print(self.conf)
+        # self.logger.debug(self.conf)
         for k in self.conf.keys():
             try:
-                print(f'in configmodule, try: {k}')
+                self.logger.debug(f'in configmodule, try: {k}')
                 self._module._isvalid(self.conf, k)
                 self.conf[k] = self.conf[k]
             except TypeError:
-                print(f'in configmodule, error: {k}')
+                self.logger.debug(f'in configmodule, error: {k}')
                 self.conf[k] = self._default[k]
 
         return self.conf
 
     def save(self):
         """Write back new parameters"""
+        # self.logger.debug('save')
         with open(self._confjson, 'w') as conf:
             json.dump(self.conf, conf, indent=4)
 

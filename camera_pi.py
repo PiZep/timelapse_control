@@ -29,7 +29,7 @@ class Camera(BaseCamera):
     def take_picture(fullname, res):
         camera = picamera.PiCamera(resolution=res)
         # let camera warm up
-        time.sleep(2)
+        time.sleep(1)
         # camera.start_preview()
         camera.resolution = res
 

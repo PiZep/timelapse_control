@@ -4,6 +4,7 @@ This file is based on Miguel Grinberg work:
 https://github.com/miguelgrinberg/flask-video-streaming
 
 """
+import logging
 import time
 import threading
 try:
@@ -37,9 +38,11 @@ class CameraEvent():
 
     def __init__(self):
         self.events = {}
+        self.logger = logging.getLogger('server_app.stream_camera.CameraEvent')
 
     def wait(self):
         """Invoked from each client's thread to wait for the next frame."""
+        # self.logger.debug('wait')
         ident = get_ident()
         if ident not in self.events:
             # this is a new client
@@ -50,6 +53,7 @@ class CameraEvent():
 
     def set(self):
         """Invoked by the camera thread when a new frame is available."""
+        # self.logger.debug('set')
         now = time.time()
         remove = None
         for ident, event in self.events.items():
@@ -70,6 +74,7 @@ class CameraEvent():
 
     def clear(self):
         """Invoked from each client's thread after a frame was processed."""
+        # self.logger.debug('clear')
         self.events[get_ident()][0].clear()
 
 
@@ -79,9 +84,14 @@ class BaseCamera():
     frame = None  # current frame is stored here by background thread
     last_access = 0  # time of last client access to the camera
     event = CameraEvent()
+    logger = (logging.getLogger('server_app.stream_camera.BaseCamera'))
+
+    def __init__(self):
+        self.logger.debug('__init__')
 
     def perm_stream(self):
         """Start or stop the streaming thread"""
+        self.logger.debug('perm_stream')
         if BaseCamera.thread is None:
             # start background frame thread
             BaseCamera.thread = StopableThread(target=self._thread)
@@ -94,6 +104,7 @@ class BaseCamera():
 
     def get_frame(self):
         """Return the current camera frame."""
+        # self.logger.debug('get_frame')
         self.last_access = time.time()
 
         # wait for a signal from the camera thread
@@ -110,7 +121,7 @@ class BaseCamera():
     @classmethod
     def _thread(cls):
         """Camera background thread."""
-        print('Starting camera thread.')
+        cls.logger.debug('_tread')
         frames_iterator = cls.frames()
         for frame in frames_iterator:
             BaseCamera.frame = frame

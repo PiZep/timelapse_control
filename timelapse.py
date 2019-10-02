@@ -3,6 +3,7 @@
 
 """Main class of the application"""
 import os
+import logging
 # import threading
 # from camera_opencv import Camera
 from datetime import datetime, timedelta
@@ -21,6 +22,7 @@ class TimeLapse(ConfigJSON):
 
     def __init__(self, camera, config=None, naming_func=None, *args):
         super().__init__(config)
+        self.logger = logging.getLogger('server_app.timelapse.Timelapse')
         self.camera = camera
         self.naming = naming_func
         self.naming_args = args
@@ -28,35 +30,35 @@ class TimeLapse(ConfigJSON):
         self.last_shot = None
         self._count = 0
 
-        # self.config = self._getconfig()
-        # self.config = super(ConfigJSON, self)._getconfig()
+        self.logger.debug('__init__')
 
     def __del__(self):
         super().__del__()
 
-    def take_picture(self, name_fun, *args):
+    def take_picture(self, name_fun=None, *args):
         """Take a picture"""
-        print("take_picture")
+        self.logger.debug('take_picture')
         self._count += 1
         if name_fun:
             name = name_fun(*args)
         else:
             name = self._default_naming()
-        pic_full_path = os.path.sep.join((config.PATH, name))
+        pic_full_path = os.path.sep.join((self.conf.path, name))
         print(pic_full_path)
-        self.camera.take_picture(pic_full_path, config.CAM_RES)
+        self.camera.take_picture(pic_full_path, self.conf.res)
+        self.last_pic = pic_full_path
         return name
 
     def delay(self):
         """Calculate the delay in second before the next picture"""
 
-        print("delay")
-        next_pic = datetime.fromtimestamp(self.last_shot + config.INTERVAL)
+        self.logger.debug('delay')
+        next_pic = datetime.fromtimestamp(self.last_shot + self.conf.INTERVAL)
 
         forecast = timedelta(hours=next_pic.hour,
                              minutes=next_pic.minute).total_seconds()
-        limit = timedelta(hours=config.END_HOUR,
-                          minutes=config.END_MIN).total_seconds()
+        limit = timedelta(hours=self.conf.end.hour,
+                          minutes=self.conf.end.minute).total_seconds()
 
         # Calculate next day if the next forecast picture
         # is taken after the limit hour
@@ -64,14 +66,14 @@ class TimeLapse(ConfigJSON):
         d_days = 0
         if forecast > limit:
             d_days += 1
-            while not config.DAYS[week_day]:
+            while not self.conf.days[week_day]:
                 week_day = week_day + 1 if week_day < 6 else 0
                 d_days += 1
 
             next_pic = datetime(year=self.last_shot.year, month=next_pic.month,
                                 day=self.last_shot.day + d_days,
-                                hour=config.START['hour'],
-                                minute=config.START['minute'])
+                                hour=self.conf.start.hour,
+                                minute=self.conf.start.minute)
 
         delay = next_pic - datetime.now()
 
@@ -80,25 +82,26 @@ class TimeLapse(ConfigJSON):
 
     def timelapse(self):
         """Set timelapse"""
-        print("timelapse")
+        self.logger.debug('timelapse')
         self._set_path()
         while True:
             start = time.time()
-            self.last_pic = self.take_picture(self.naming, self.naming_args)
+            self.take_picture(self.naming, self.naming_args)
             self.last_shot = time.time()
             print(f"pic time: {self.last_shot},"
                   f"method start: {start}, delay: {self.last_shot - start}")
-            if self.config.PARAM['timeset']:
+            if self.conf.timeset:
                 delay = self.delay()
             else:
-                delay = self.config.PARAM['interval'] - self.last_shot + start
+                delay = self.conf.interval - self.last_shot + start
             delay = delay if delay >= 0 else 0
             time.sleep(delay)
             yield self.last_shot
 
     def _set_path(self):
         """Verify or make the required directories"""
-        path = os.path.join(self.config.PARAM['path'], MAIN_DIR)
+        self.logger.debug('_set_path')
+        path = os.path.join(self.conf.path, MAIN_DIR)
         if not os.access(path, os.F_OK):
             os.mkdir(MAIN_DIR)
 
@@ -110,7 +113,7 @@ class TimeLapse(ConfigJSON):
         The maximum number of directories is 10.
         """
 
-        print("_default_naming()")
+        self.logger.debug('_default_naming')
         for d in range(1, MAX_DIR + 1):
             count = 1
             dir_name = os.path.join(MAIN_DIR, str(d).zfill(2))

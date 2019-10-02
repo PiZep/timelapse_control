@@ -5,12 +5,13 @@ import os
 DEFAULT = {"timeset": False,
            "res": (320, 240),
            "interval": 60,
-           "path": "",
+           "path": str(os.getcwd()),
            "days": [False] * 7,
            "start": {"hour": 0, "minute": 0},
            "end": {"hour": 0, "minute": 0},
            "lastpic": ""
            }
+print(DEFAULT['path'])
 
 # TIMESET = _DEFAULT['timeset']
 # CAM_RES = (_DEFAULT['res']['width'], _DEFAULT['res']['height'])
@@ -44,7 +45,7 @@ def _isvalid(param, key=None):
         keys = OPTIONS
 
     for k in keys:
-        print(f'in configtest: {k}={param[k]}')
+        # print(f'in configtest: {k}={param[k]}')
         if k not in param:
             isvalid = False
             error = f'The "{k}" key is not optional'
@@ -68,6 +69,11 @@ def _isvalid(param, key=None):
                         (param[k]['hour'] > 24 or param[k]['minute'] > 59)):
                     isvalid = False
                     error = "Wrong hour setting"
+                    break
+            elif k == 'path':
+                if not (os.path.isdir(param[k]) and os.access(param[k], os.W_OK)):
+                    isvalid = False
+                    error = "Wrong path"
                     break
 
     if not isvalid:

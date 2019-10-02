@@ -2,38 +2,21 @@
 <html lang="fr">
   <head>
     <title>Contrôle de la caméra</title>
-    <!-- <link rel="stylesheet" href="../static/css/tlindex.css" media="all" type="text/css"> -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tlindex.css') }}" media="all" type="text/css">
-  <script type="text/javascript" src="{{ url_for('static', filename='js/tlform.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/tlform.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" media="all" type="text/css">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <noscript> -->
+    <!--   <style> -->
+    <!--     body { -->
+    <!--       opacity: 1; -->
+    <!--     } -->
+    <!--   </style> -->
+    <!-- </noscript> -->
   </head>
 
   <body>
-
-    <!-- <script type="text/javascript"> -->
-    <!--   function convertToImgPerMin(interval) { -->
-    <!--     document.querySelector("#freq").innerHTML = 60/interval; -->
-    <!--   } -->
-    <!-- </script> -->
-
-    <!-- <script type="text/javascript"> -->
-    <!--   window.onload = function(event) { -->
-    <!--     convertToImgPerMin(document.getElementById('interval').value); -->
-    <!--     showOrHide('block'); -->
-    <!--   } -->
-    <!-- </script> -->
-
-    <!-- <script> -->
-    <!--   function showOrHide(block) { -->
-    <!--     var checkBox = document.getElementById("days"); -->
-    <!--     if (checkBox.checked == true) { -->
-    <!--       visibility = "block"; -->
-    <!--     } else { -->
-    <!--       visibility = "none"; -->
-    <!--     } -->
-    <!--     document.getElementById(block).style.display = visibility; -->
-    <!--   } -->
-    <!-- </script> -->
 
     <header>
       <h1>Contrôle de la caméra</h1>
@@ -44,8 +27,12 @@
       <div class="column main">
         <!-- <form action="" method="post"> -->
           <img src="{{ url_for('video_feed') }}" alt="Vidéo en streaming ou dernière prise de vue">
-          <label class="streamswitch" for="togglestream"> {{ form.stream }} <div></div>
-            Streaming</label>
+          <!-- <label class="streamswitch" for="togglestream"> {{ form.stream }} <div></div> -->
+          <div class="custom-control custom-switch" id="togglestream">
+            <input id="streamswitch" class="custom-control-input" type="checkbox">
+            <label class="custom-control-label" for="streamswitch">Streaming</label>
+          </div>
+            <!-- Streaming</label> -->
         <!-- </form> -->
       </div>
 
@@ -57,9 +44,9 @@
         <form action="" method="post">
           <fieldset>
             <legend>Intervalle des prises de vue</legend>
-            Intervale : {{ form.interval(id="interval", size=15, oninput="convertToImgPerMin(value)") }} sec.<br>
+            Intervale : {{ form.interval(id="interval", size=15, oninput="convertToImgPerTime(value)") }} sec.<br>
             <!-- soit <output class="commet" name="f" for="interv"></output> img/min<br> -->
-            soit <span id="freq"></span> img/min<br>
+            soit <span id="freq"></span><br>
           </fieldset>
 
           <!-- <h2>Paramétrage de l'activité</h2> -->

@@ -1,19 +1,30 @@
+// $(window).load (function () { $('body').addClass ('all-loaded'); });
 
-window.onload = function(event) {
-  convertToImgPerMin(document.getElementById('interval').value);
-  showOrHide('block');
-}
-
-function convertToImgPerMin(interval) {
-  document.querySelector("#freq").innerHTML = 60/interval;
-}
-
-function showOrHide(block) {
-  var checkBox = document.getElementById("days");
-  if (checkBox.checked == true) {
-    visibility = "block";
+function convertToImgPerTime (interval) {
+  var changedFreq = freq;
+  var freqText = '';
+  if (interval > 60) {
+    freqText = 'img/hr';
+    changedFreq = (3600 / interval);
   } else {
-    visibility = "none";
+    freqText = 'img/min';
+    changedFreq = (60 / interval);
+  }
+  var formatFreq = changedFreq.toFixed(2);
+  document.querySelector('#freq').innerHTML = formatFreq.concat(' ', freqText);
+}
+
+function showOrHide (block) {
+  var checkBox = document.getElementById('days');
+  if (checkBox.checked === true) {
+    visibility = 'block';
+  } else {
+    visibility = 'none';
   }
   document.getElementById(block).style.display = visibility;
+}
+
+window.onload = function (event) {
+  convertToImgPerTime (document.getElementById('interval').value);
+  showOrHide ('block');
 }
