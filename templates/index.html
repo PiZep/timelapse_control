@@ -25,27 +25,25 @@
     <section>
 
       <div class="column main">
-        <!-- <form action="" method="post"> -->
+        <form action="" method="post" novalidate>
+          {{ togglestream.hidden_tag() }}
           <img src="{{ url_for('video_feed') }}" alt="Vidéo en streaming ou dernière prise de vue">
-          <!-- <label class="streamswitch" for="togglestream"> {{ form.stream }} <div></div> -->
           <div class="custom-control custom-switch" id="togglestream">
-            <input id="streamswitch" class="custom-control-input" type="checkbox">
+            {{ togglestream.stream(id="streamswitch", class="custom-control-input", onChange="this.form.submit()") }}
             <label class="custom-control-label" for="streamswitch">Streaming</label>
           </div>
             <!-- Streaming</label> -->
-        <!-- </form> -->
+        </form>
       </div>
 
       </div class="column main">
 
       <div class="column side">
-        <!-- <h2>Fréquence de prise de vue:</h2> -->
-        <!-- <form action="" method="post" oninput="f.value=60/parseInt(interv.value)"> -->
-        <form action="" method="post">
+        <form action="" method="post" novalidate>
+          {{ form.hidden_tag() }}
           <fieldset>
             <legend>Intervalle des prises de vue</legend>
             Intervale : {{ form.interval(id="interval", size=15, oninput="convertToImgPerTime(value)") }} sec.<br>
-            <!-- soit <output class="commet" name="f" for="interv"></output> img/min<br> -->
             soit <span id="freq"></span><br>
           </fieldset>
 
@@ -64,23 +62,23 @@
               {% for day in form.days %}
               <li class="list"> 
                 <span class="start">{{ day.label }}</span>
-                <span class="end">{{ day }}</span>
+                <span class="end">{{ day() }}</span>
               </li>
               {% endfor %}
             </ul>
 
             <!-- Choix des heures de début et de fin -->
             <label for="start">De :</label>
-            <input type="time" id="start" name="start">
+            {{ form.start(id="start") }}
 
-            <label for="start">à :</label>
-            <input type="time" id="stop" name="stop"><br>
+            <label for="stop">à :</label>
+            {{ form.end(id="stop") }} <br>
             <small class="comment">Si "Début" = "Fin", la capture est faite en continu les jours sélectionnés.</small>
           </fieldset>
           <fieldset>
             <legend>Validation</legend>
             <!-- {{ form.path }}<br> -->
-            {{ form.submit }}
+            {{ form.submit() }}
           </fieldset>
         </form>
 

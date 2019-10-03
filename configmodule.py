@@ -153,7 +153,7 @@ class ConfigJSON:
 
     def save(self):
         """Write back new parameters"""
-        # self.logger.debug('save')
+        self.logger.debug('save')
         with open(self._confjson, 'w') as conf:
             json.dump(self.conf, conf, indent=4)
 

@@ -26,7 +26,6 @@ class TimeLapse(ConfigJSON):
         self.camera = camera
         self.naming = naming_func
         self.naming_args = args
-        self.last_pic = None
         self.last_shot = None
         self._count = 0
 
@@ -46,14 +45,15 @@ class TimeLapse(ConfigJSON):
         pic_full_path = os.path.sep.join((self.conf.path, name))
         print(pic_full_path)
         self.camera.take_picture(pic_full_path, self.conf.res)
-        self.last_pic = pic_full_path
+        self.conf.lastpic = pic_full_path
+        self.save()
         return name
 
     def delay(self):
         """Calculate the delay in second before the next picture"""
 
         self.logger.debug('delay')
-        next_pic = datetime.fromtimestamp(self.last_shot + self.conf.INTERVAL)
+        next_pic = datetime.fromtimestamp(self.last_shot + self.conf.interval)
 
         forecast = timedelta(hours=next_pic.hour,
                              minutes=next_pic.minute).total_seconds()
