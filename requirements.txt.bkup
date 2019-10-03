@@ -15,3 +15,4 @@ validators==0.14.0
 Werkzeug==0.15.5
 WTForms==2.2.1
 WTForms-Components==0.10.4
+picamera==1.13

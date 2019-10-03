@@ -75,6 +75,11 @@ def _isvalid(param, key=None):
                     isvalid = False
                     error = "Wrong path"
                     break
+            elif k == 'lastpic':
+                if not os.path.isfile(param[k]):
+                    isvalid = False
+                    error = "No last picture"
+                    break
 
     if not isvalid:
         raise TypeError(error)

@@ -5,7 +5,7 @@
         1080
     ],
     "interval": 60,
-    "path": "/home/pi/projets/timelapse_control",
+    "path": "/home/pierre/projects/timelapse_control",
     "days": [
         false,
         false,
@@ -23,5 +23,5 @@
         "hour": 0,
         "minute": 0
     },
-    "lastpic": "/home/pi/projets/timelapse_control/timelapse/07/07_564.jpg"
+    "lastpic": ""
 }
