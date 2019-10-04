@@ -26,10 +26,10 @@
 
       <div class="column main">
         <form action="" method="post" novalidate>
-          {{ togglestream.hidden_tag() }}
-          <img src="{{ url_for('video_feed') }}" alt="Vidéo en streaming ou dernière prise de vue">
+          {{ form.hidden_tag() }}
+          <img src="{{ url_for('video_feed', video=video) }}" alt="Vidéo en streaming ou dernière prise de vue">
           <div class="custom-control custom-switch" id="togglestream">
-            {{ togglestream.stream(id="streamswitch", class="custom-control-input", onChange="this.form.submit()") }}
+            {{ form.stream(id="streamswitch", class="custom-control-input", onChange="this.form.submit()") }}
             <label class="custom-control-label" for="streamswitch">Streaming</label>
           </div>
             <!-- Streaming</label> -->

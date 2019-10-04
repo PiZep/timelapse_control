@@ -1,20 +1,12 @@
 {
     "timeset": false,
     "res": [
-        1920,
-        1080
+        320,
+        240
     ],
-    "interval": 60,
-    "path": "/home/pierre/projects/timelapse_control",
-    "days": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-    ],
+    "interval": 10,
+    "path": "/home/pi/projets/timelapse_control",
+    "days": [],
     "start": {
         "hour": 0,
         "minute": 0
@@ -23,5 +15,5 @@
         "hour": 0,
         "minute": 0
     },
-    "lastpic": ""
+    "lastpic": "/home/pi/projets/timelapse_control/timelapse/07/07_567.jpg"
 }
