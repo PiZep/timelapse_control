@@ -2,8 +2,9 @@
 
 import os
 
-DEFAULT = {"timeset": False,
-           "res": (320, 240),
+DEFAULT = {"timelapse_on": False,
+           "timeset": False,
+           "res": (1920, 1080),
            "interval": 60,
            "path": str(os.getcwd()),
            "days": [False] * 7,

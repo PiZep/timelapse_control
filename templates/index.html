@@ -29,22 +29,20 @@
           {{ form.hidden_tag() }}
           <img src="{{ url_for('video_feed', video=video) }}" alt="Vidéo en streaming ou dernière prise de vue">
           <div class="custom-control custom-switch" id="togglestream">
-            {{ form.stream(id="streamswitch", class="custom-control-input", onChange="this.form.submit()") }}
-            <label class="custom-control-label" for="streamswitch">Streaming</label>
+            {{ form.timelapse_on(id="streamswitch", class="custom-control-input") }}
+            <label class="custom-control-label" for="streamswitch" style="font-weight:bold; color:#ffffff; background-color:#000">Time Lapse</label>
           </div>
             <!-- Streaming</label> -->
-        </form>
       </div>
 
       </div class="column main">
 
       <div class="column side">
-        <form action="" method="post" novalidate>
-          {{ form.hidden_tag() }}
           <fieldset>
-            <legend>Intervalle des prises de vue</legend>
+            <legend>Configuration de la caméra</legend>
             Intervale : {{ form.interval(id="interval", size=15, oninput="convertToImgPerTime(value)") }} sec.<br>
             soit <span id="freq"></span><br>
+            {{ form.res.label }}: {{ form.res }}
           </fieldset>
 
           <!-- <h2>Paramétrage de l'activité</h2> -->

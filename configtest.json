@@ -1,12 +1,21 @@
 {
+    "timelapse_on": true,
     "timeset": false,
     "res": [
-        320,
-        240
+        1920,
+        1080
     ],
-    "interval": 10,
+    "interval": 5,
     "path": "/home/pi/projets/timelapse_control",
-    "days": [],
+    "days": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+    ],
     "start": {
         "hour": 0,
         "minute": 0

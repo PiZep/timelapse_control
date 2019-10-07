@@ -9,17 +9,16 @@ import os
 from flask import (Flask,
                    render_template,
                    Response,
-                   request,
-                   send_file)
+                   request)
 from flask_wtf import FlaskForm
 from wtforms import (BooleanField,
                      widgets,
                      SubmitField,
+                     SelectField,
                      SelectMultipleField)
 from wtforms.validators import DataRequired
-from wtforms.fields.html5 import IntegerField
-                                  # TimeField)
-from wtforms_components import TimeField
+from wtforms.fields.html5 import (IntegerField,
+                                  TimeField)
 import configtest
 from timelapse import TimeLapse
 
@@ -62,7 +61,8 @@ class TimelapseForm(FlaskForm):
     locale.setlocale(locale.LC_ALL, '')
 
     app.logger.debug(f'config: {timelapse.conf}')
-    stream = BooleanField('Streaming')
+    timelapse_on = BooleanField('Time Lapse',
+                                default=timelapse.conf.timelapse_on)
     interval = IntegerField(default=timelapse.conf.interval,
                             validators=[DataRequired()])
     timeset = BooleanField('Jours de la semaine',
@@ -74,6 +74,7 @@ class TimelapseForm(FlaskForm):
 
     start = TimeField('De : ', format='%H:%M')
     end = TimeField('à : ', format='%H:%M')
+    res = SelectField('Résolution')
     submit = SubmitField('Enregistrer')
     # path = FileField('Répertoire :', default=timelapse.conf.path)
     # print(path)
@@ -87,13 +88,53 @@ class TimelapseForm(FlaskForm):
         if not self.end.data:
             self.end.data = time(hour=timelapse.conf.end['hour'],
                                  minute=timelapse.conf.end['minute'])
+        if not self.res.choices:
+            self.res.choices = [('240p', '320x240'),
+                                ('480p', '640x480'),
+                                ('600p', '800x600'),
+                                ('720p', '1280x720'),
+                                ('1080p', '1920x1080'),
+                                ('1440p', '2560x1440'),
+                                ('2160p', '3840x2160')]
+            self.res.data = self._get_name_from_res(timelapse.conf.res)
 
+    @staticmethod
+    def _get_res_from_name(resname):
+        res = (0, 0)
+        if resname == '240p':
+            res = [320, 240]
+        if resname == '480p':
+            res = [640, 480]
+        if resname == '600p':
+            res = [800, 600]
+        if resname == '720p':
+            res = [1280, 720]
+        if resname == '1080p':
+            res = [1920, 1080]
+        if resname == '1440p':
+            res = [2560, 1440]
+        if resname == '2160p':
+            res = [3840, 2160]
+        return res
 
-# class ToggleStream(FlaskForm):
-#     """
-#     Checkbox switch for streaming
-#     """
-#     stream = BooleanField('Streaming')
+    @staticmethod
+    def _get_name_from_res(res):
+        name = '240p'
+        if res == (320, 240):
+            name = '240p'
+        if res == (640, 480):
+            name = '480p'
+        if res == (800, 600):
+            name = '600p'
+        if res == (1280, 720):
+            name = '720p'
+        if res == (1920, 1080):
+            name = '1080p'
+        if res == (2560, 1440):
+            name = '1440p'
+        if res == (3840, 2160):
+            name = '2160p'
+        return name
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -101,38 +142,35 @@ def index():
     """Video streaming home page."""
     app.logger.info("index function launched")
     form = TimelapseForm()
-    togglestream = form.stream
-    app.logger.info(f'index.togglestream.data: {togglestream.data}')
+    timelapse_on = form.timelapse_on
+    app.logger.info(f'index.togglestream.data: {timelapse_on.data}')
 
     app.logger.debug(f'{form.errors}')
     if request.method == 'GET':
-        togglestream = form.stream
+        timelapse_on = form.timelapse_on
         app.logger.debug(f'index.{request.method} -> '
-                         f'togglestream.data: {togglestream.data}')
+                         f'timelapse_on.data: {timelapse_on.data}')
         app.logger.debug(f'index.{request.method} -> errors -> {form.errors}')
-
-        video_feed(togglestream)
-        return render_template('index.html', form=form)
 
     if form.validate_on_submit():
         app.logger.info('index.form validated')
         for field in form:
-            app.logger.debug(f'index.form: {field.name} ='
-                             f' {field.data} ({type(field.data)})')
             if field.name == 'start' or field.name == 'end':
                 timelapse.conf[field.name]['hour'] = 0  # params.hour
                 timelapse.conf[field.name]['minute'] = 0  # params.minute
             elif field.name in timelapse.conf.keys():
                 timelapse.conf[field.name] = field.data
-            elif field.name == 'stream':
-                video_feed(field)
+            elif field.name == 'res':
+                timelapse.conf[field.name] = \
+                    form._get_res_from_name(field.data)
             else:
                 continue
+            app.logger.debug(f'index.form: {field.name} ='
+                             f' {field.data} ({timelapse.conf[field.name]})')
         timelapse.save()
-        return render_template('index.html', form=form)
+
     else:
         app.logger.info(f'index.form not validated -> {form.errors}')
-        return render_template('index.html', form=form)
 
     return render_template('index.html', form=form)
 
@@ -147,40 +185,17 @@ def gen(camera):
 
 
 @app.route('/video_feed', methods=['GET', 'POST'])
-def video_feed(video=None):
+def video_feed():
     """Video streaming route. Put this in the src attribute of an img tag."""
     # video = togglestream.data if togglestream else False
-    if video:
-        app.logger.debug(f'video_feed -> video: {video}')
+    app.logger.info(f'video_feed')
 
     # resp = Response(mimetype='multipart/x-mixed-replace; boundary=frame')
-        if video.data:
-            if not timelapse.camera.thread:
-                timelapse.camera.perm_stream()
-        else:
-            timelapse.camera.perm_stream()
-        return Response(gen(timelapse.camera),
-                        mimetype='multipart/x-mixed-replace;'
-                        'boundary=frame')
-
-    else:
-        name = (timelapse.conf.lastpic if timelapse.conf.lastpic
-                else timelapse.take_picture())
-
-        # return send_file(timelapse.conf.lastpic,
-        #                  attachment_filename=name,
-        #                  mimetype="image/jpeg")
-        return Response(name,
-                        mimetype='multipart/x-mixed-replace;'
-                        'boundary=frame')
-
-
-# @app.route('/lastpic')
-# def last_pic():
-#     app.logger.debug("last_pic")
-#     if timelapse.camera.thread:
-#         timelapse.perm_stream()
-#     return timelapse.last_pic
+    if not timelapse.camera.thread:
+        timelapse.camera.perm_stream()
+    return Response(gen(timelapse.camera),
+                    mimetype='multipart/x-mixed-replace;'
+                    'boundary=frame')
 
 
 if __name__ == '__main__':
