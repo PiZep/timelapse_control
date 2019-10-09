@@ -20,10 +20,8 @@ Manuel d'utilisation
 --------------------
 ### Le programme visé
 #### Installation sur un Raspberry Pi vierge
-**
-* Il est nécessaire d'être équipé d'un écran et d'un câble HDMI (ou d'un adapteur HDMI-VGA qui fonctionne).
-* Le Raspberry doit être connecté au réseau pour que l'installation fonctionne.
-**
+* **Il est nécessaire d'être équipé d'un écran et d'un câble HDMI (ou d'un adapteur HDMI-VGA qui fonctionne).**
+* **Le Raspberry doit être connecté au réseau pour que l'installation fonctionne.**
 Une installation peut être envisagé en chroot depuis un système linux :
 `https://gist.github.com/htruong/7df502fb60268eeee5bca21ef3e436eb`
 1. Récupérer les sources du programme sur github :
