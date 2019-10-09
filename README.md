@@ -90,7 +90,7 @@ Ces modules permettent d'instancier une classe `Camera`
 ### Timelapse
 * `timelapse.py`
 Le module timelapse.py contient la logique du Time Lapse, via la classe `TimeLapse`, qui hérite de la clase `ConfigJSON`.
-Cette dernière est instanciée avec en paramètre une classe `Camera` et un élément de configuration (un module, un nom de module, un dictionnaire...).
+Elle est instanciée avec en paramètre une classe `Camera` et un élément de configuration (un module, un nom de module, un dictionnaire...).
 
 ### Serveur Flask
 * `server_app`.py
