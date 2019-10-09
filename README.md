@@ -64,3 +64,7 @@ Le Raspberry est accessible depuis tout appareil équipé du WiFi.
 ![config_timelapse capture](images/config_timelapse.png?raw=true "/config_timelapse page")
 
 Des options supplémentaires sont accessibles si le Raspberry a accès à un seveur NTP, permettant de définir les plages horaires et les jours, notamment afin de limiter l'utilisation de la mémoire.
+
+Organisation des fichiers source
+--------------------------------
+

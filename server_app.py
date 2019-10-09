@@ -25,7 +25,7 @@ from wtforms.validators import DataRequired
 from wtforms.fields.html5 import (IntegerField,
                                   TimeField)
 import ntplib
-import configtest
+import configtl
 from timelapse import TimeLapse
 
 app = Flask(__name__)
@@ -45,7 +45,7 @@ app.logger.info('going to init Camera()')
 cam = Camera()
 
 app.logger.info('going to init TimeLapse()')
-timelapse = TimeLapse(cam, configtest)
+timelapse = TimeLapse(cam, configtl)
 
 app.logger.info('starting: %s', timelapse.conf)
 
