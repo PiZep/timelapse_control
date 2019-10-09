@@ -76,8 +76,8 @@ class ConfigJSON:
         self.logger.debug('__init__')
 
     def __del__(self):
-        self.save()
         self.logger.debug("__del__")
+        self.save()
 
     def _getmodule(self, module):
         """Check config module validity"""

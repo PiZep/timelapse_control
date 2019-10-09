@@ -28,6 +28,7 @@ class TimeLapse(ConfigJSON):
         self.naming_args = kwargs
         self.last_shot = None
         self._count = 0
+        self.started = False
 
         self.logger.debug('__init__')
 
@@ -79,20 +80,21 @@ class TimeLapse(ConfigJSON):
         print(d_days, delay.total_seconds(), self.last_shot, next_pic)
         return delay.total_seconds()
 
-    def timelapse(self):
+    def cycle(self):
         """Set timelapse"""
         self.logger.debug('timelapse')
         self._set_path()
+        self.started = True
         while True:
-            start = time.time()
+            pstart = time.time()
             self.take_picture(self.naming, **self.naming_args)
             self.last_shot = time.time()
             print(f"pic time: {self.last_shot},"
-                  f"method start: {start}, delay: {self.last_shot - start}")
+                  f"method pstart: {pstart}, delay: {self.last_shot - pstart}")
             if self.conf.timeset:
                 delay = self.delay()
             else:
-                delay = float(self.conf.interval) - self.last_shot + start
+                delay = float(self.conf.interval) - self.last_shot + pstart
             delay = delay if delay >= 0 else 0
             time.sleep(delay)
             yield self.last_shot
