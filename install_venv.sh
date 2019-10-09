@@ -33,16 +33,16 @@ else
 	    ;;
 	esac
     fi
-    case $DISTRIB in
-        # VoidLinux : machine de test
-        "VoidLinux")
-        sudo xbps-install -S redis
-        ;;
-    "Debian" | "Raspbian")
-        sudo apt install redis-server -y
-        ;;
-    esac
 fi
+case $DISTRIB in
+    # VoidLinux : machine de test
+    "VoidLinux")
+    sudo xbps-install -S redis
+    ;;
+"Debian" | "Raspbian")
+    sudo apt install redis-server -y
+    ;;
+esac
 
 echo $WPATH
 
@@ -59,13 +59,16 @@ deactivate
 
 # Création des liens des librairies installées sur le système
 # vers l'environnement virtuel pour opencv
-if [ $# -eq 1 -a $1 == "opencv" ]
+if [ $# -eq 1 ]
 then
-    CV2_LIB=$(python3 -c 'import cv2; print(cv2.__file__)')
-    ln -s $CV2_LIB $WPATH/env/lib/$PYTHON_VER/site-packages/
+    if [ $1 == "opencv" ]
+    then
+        CV2_LIB=$(python3 -c 'import cv2; print(cv2.__file__)')
+        ln -s $CV2_LIB $WPATH/env/lib/$PYTHON_VER/site-packages/
 
-    NUMPY_LIB=$(python3 -c 'import numpy; print(numpy.__path__)')
-    NUMPY_LIB=${NUMPY_LIB%"']"}
-    NUMPY_LIB=${NUMPY_LIB#"['"}
-    ln -s $NUMPY_LIB $WPATH/env/lib/$PYTHON_VER/site-packages/
+        NUMPY_LIB=$(python3 -c 'import numpy; print(numpy.__path__)')
+        NUMPY_LIB=${NUMPY_LIB%"']"}
+        NUMPY_LIB=${NUMPY_LIB#"['"}
+        ln -s $NUMPY_LIB $WPATH/env/lib/$PYTHON_VER/site-packages/
+    fi
 fi

@@ -32,7 +32,7 @@ app = Flask(__name__)
 # csrf = CsrfProtect()
 
 format = "%(asctime)s -> %(name)s: %(message)s"
-logging.basicConfig(format=format, level=logging.DEBUG,
+logging.basicConfig(format=format, level=logging.INFO,
                     datefmt='%H:%M:%S')
 # import camera driver
 if os.environ.get('CAMERA'):
