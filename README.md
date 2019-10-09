@@ -53,15 +53,14 @@ Le Raspberry est accessible depuis tout appareil équipé du WiFi.
    *Adresse IP :* `http://192.168.3.10:5000`
 3. La page qui s'ouvre (`/home`) montre la dernière capture réalisée et les paramètres du Time Lapse. Un clic sur le bouton `Configurer` permet d'accéder au flux vidéo et met en pause le Time Lapse.
 
-![home capture][home]
-[home]: /../<buggymess>/images/home.png?raw=true "/home page"
+![home capture](images/home.png?raw=true "/home page")
+
 4. La page de configuration (`/config_timelapse`) permet de modifier les paramètres du Time Lapse. Les éléments importants sont :
   * Le switch pour mettre en route le Time Lapse, en haut à gauche,
   * L'intervalle entre deux prises de vue,
   * La résolution de la caméra (les options proposées sont compatibles avec la Pi Camera V2).
    Le bouton `Enregistrer` ramène à la page de présentation et **remet le TimeLapse en marche** (problème de threads actuellement, pas encore fonctionnel)
 
-![config_timelapse capture][config_timelapse]
-[config_timelapse]: /../buggymess/images/config_timelapse.png?raw=true "/config_timelapse page"
+![config_timelapse capture](images/config_timelapse.png?raw=true "/config_timelapse page")
 
 Des options supplémentaires sont accessibles si le Raspberry a accès à un seveur NTP, permettant de définir les plages horaires et les jours, notamment afin de limiter l'utilisation de la mémoire.
