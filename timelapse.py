@@ -4,7 +4,7 @@
 """Main class of the application"""
 import os
 import logging
-# import threading
+import threading
 # from camera_opencv import Camera
 from datetime import datetime, timedelta
 import time
@@ -20,26 +20,24 @@ MAIN_DIR = "timelapse"
 class TimeLapse(ConfigJSON):
     """Main TimeLapse class"""
 
-    def __init__(self, camera, config=None, naming_func=None, *args):
+    def __init__(self, camera, config=None, naming_func=None, **kwargs):
         super().__init__(config)
         self.logger = logging.getLogger('server_app.timelapse.Timelapse')
         self.camera = camera
         self.naming = naming_func
-        self.naming_args = args
+        self.naming_args = kwargs
         self.last_shot = None
         self._count = 0
 
         self.logger.debug('__init__')
 
-    def __del__(self):
-        super().__del__()
-
-    def take_picture(self, name_fun=None, *args):
+    def take_picture(self, name_fun=None, **kwargs):
         """Take a picture"""
+        self._set_path()
         self.logger.debug('take_picture')
         self._count += 1
         if name_fun:
-            name = name_fun(*args)
+            name = name_fun(**kwargs)
         else:
             name = self._default_naming()
         pic_full_path = os.path.sep.join((self.conf.path, name))
@@ -47,6 +45,7 @@ class TimeLapse(ConfigJSON):
         self.camera.take_picture(pic_full_path, self.conf.res)
         self.conf.lastpic = pic_full_path
         self.save()
+        self.logger.info('%s', name)
         return name
 
     def delay(self):
@@ -86,14 +85,14 @@ class TimeLapse(ConfigJSON):
         self._set_path()
         while True:
             start = time.time()
-            self.take_picture(self.naming, self.naming_args)
+            self.take_picture(self.naming, **self.naming_args)
             self.last_shot = time.time()
             print(f"pic time: {self.last_shot},"
                   f"method start: {start}, delay: {self.last_shot - start}")
             if self.conf.timeset:
                 delay = self.delay()
             else:
-                delay = self.conf.interval - self.last_shot + start
+                delay = float(self.conf.interval) - self.last_shot + start
             delay = delay if delay >= 0 else 0
             time.sleep(delay)
             yield self.last_shot
@@ -124,9 +123,7 @@ class TimeLapse(ConfigJSON):
             else:
                 abs_path = os.path.abspath(dir_name)
                 count = len([f for f in os.listdir(dir_name)
-                             if os.path.isfile(os.path.join(abs_path, f))# and
-                             # os.path.splitext(os.path.join(abs_path, f)) ==
-                             # ".jpg"]) + 1
+                             if os.path.isfile(os.path.join(abs_path, f))
                              ]) + 1
                 if not count >= MAX_PIC:
                     print(f"Saving new pic:"
@@ -137,4 +134,12 @@ class TimeLapse(ConfigJSON):
                                                 str(count).zfill(3))))
         self._count += self._count
         return name + ".jpg"
+
+    # def launch_timelapse(self, camera_status):
+    #     thread = threading.Thread(target=video_feed)
+    #     thread.start()
+    #     camera_status.wait()
+    #     if self.conf.timelapse_on:
+    #         for t in self.timelapse():
+    #             self.logger.info(t)
 

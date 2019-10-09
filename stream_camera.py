@@ -89,9 +89,9 @@ class BaseCamera():
     def __init__(self):
         self.logger.debug('__init__')
 
-    def perm_stream(self):
-        """Start or stop the streaming thread"""
-        self.logger.debug('perm_stream')
+    def start_stream(self):
+        """Start the streaming thread"""
+        self.logger.info('start_stream')
         if BaseCamera.thread is None:
             # start background frame thread
             BaseCamera.thread = StopableThread(target=self._thread)
@@ -99,8 +99,11 @@ class BaseCamera():
             # wait until frames are available
             while self.get_frame() is None:
                 time.sleep(0)
-        else:
-            BaseCamera.thread.stop()
+
+    def stop_stream(self):
+        """Stop the streaming thread"""
+        self.logger.info('stop_stream')
+        BaseCamera.thread.stop()
 
     def get_frame(self):
         """Return the current camera frame."""

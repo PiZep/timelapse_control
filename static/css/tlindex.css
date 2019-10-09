@@ -112,10 +112,9 @@ label:after {
 }
 
 fieldset {
-  border-top-width: 0.2rem;
-  border-left-width: 0.2rem;
-  border-right-style: none;
-  border-bottom-style: hidden;
+  border-top-width: 0.1rem;
+  border-style: none;
+  border-top-style: dotted;
   border-color: rgb(90, 90, 90);
   margin-bottom: 1rem;
 }

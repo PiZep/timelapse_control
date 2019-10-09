@@ -33,6 +33,15 @@ else
 	    ;;
 	esac
     fi
+    case $DISTRIB in
+        # VoidLinux : machine de test
+        "VoidLinux")
+        sudo xbps-install -S redis
+        ;;
+    "Debian" | "Raspbian")
+        sudo apt install redis-server -y
+        ;;
+    esac
 fi
 
 echo $WPATH
@@ -50,7 +59,7 @@ deactivate
 
 # Création des liens des librairies installées sur le système
 # vers l'environnement virtuel pour opencv
-if [ $# -lt 1 -a $1 == "opencv" ]
+if [ $# -eq 1 -a $1 == "opencv" ]
 then
     CV2_LIB=$(python3 -c 'import cv2; print(cv2.__file__)')
     ln -s $CV2_LIB $WPATH/env/lib/$PYTHON_VER/site-packages/

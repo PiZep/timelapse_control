@@ -1,16 +1,21 @@
 #!/usr/bin/env python
 """Main app"""
+import threading
 import locale
 import logging
 import calendar
 from datetime import time
 from importlib import import_module
 import os
+from celery import Celery
 from flask import (Flask,
                    render_template,
                    Response,
-                   request)
-from flask_wtf import FlaskForm
+                   request,
+                   send_file,
+                   url_for,
+                   redirect)
+from flask_wtf import FlaskForm  # , CsrfProtect
 from wtforms import (BooleanField,
                      widgets,
                      SubmitField,
@@ -19,10 +24,12 @@ from wtforms import (BooleanField,
 from wtforms.validators import DataRequired
 from wtforms.fields.html5 import (IntegerField,
                                   TimeField)
+import ntplib
 import configtest
 from timelapse import TimeLapse
 
 app = Flask(__name__)
+# csrf = CsrfProtect()
 
 format = "%(asctime)s -> %(name)s: %(message)s"
 logging.basicConfig(format=format, level=logging.DEBUG,
@@ -39,14 +46,48 @@ cam = Camera()
 
 app.logger.info('going to init TimeLapse()')
 timelapse = TimeLapse(cam, configtest)
-app.logger.info(timelapse.conf)
+
+app.logger.info('starting: %s', timelapse.conf)
+
+CAMERA_FREED = threading.Event()
+
+
+def NTP_connected():
+    c = ntplib.NTPClient()
+    result = False
+    try:
+        c.request('pool.ntp.org')
+        result = True
+    except ntplib.NTPException:
+        app.logger.error('No response from NTP server')
+    return result
+
+
+ntp = NTP_connected()
+app.logger.debug('starting: ntp = %s', ntp)
 
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dumb_key'
+    WTF_CSRF_ENABLED = False
 
 
+locale.setlocale(locale.LC_ALL, '')
 app.config.from_object(Config)
+app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+
+
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery.conf.update(app.config)
+
+
+# Asynchronous work
+@celery.task
+def launch_timelapse():
+    if timelapse.conf.timelapse_on:
+        for t in timelapse.timelapse():
+            app.logger.info(t)
 
 
 class MultiCheckboxField(SelectMultipleField):
@@ -58,7 +99,16 @@ class TimelapseForm(FlaskForm):
     """
     Timelapse webform fields
     """
-    locale.setlocale(locale.LC_ALL, '')
+    resolutions = [('240p', '320x240'),
+                   ('480p', '640x480'),
+                   ('600p', '800x600'),
+                   ('720p', '1280x720'),
+                   ('1080p', '1920x1080'),
+                   ('1440p', '2560x1440'),
+                   ('2160p', '3840x2160')]
+
+    daysfields = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+    daysnames = [calendar.day_name[i] for i, _ in enumerate(daysfields)]
 
     app.logger.debug(f'config: {timelapse.conf}')
     timelapse_on = BooleanField('Time Lapse',
@@ -68,111 +118,155 @@ class TimelapseForm(FlaskForm):
     timeset = BooleanField('Jours de la semaine',
                            default=timelapse.conf.timeset)
 
-    daysfields = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
-    dayslabels = [(d, calendar.day_name[i]) for i, d in enumerate(daysfields)]
+    dayslabels = list(zip(daysfields, daysnames))
     days = MultiCheckboxField('Label', choices=dayslabels)
 
     start = TimeField('De : ', format='%H:%M')
     end = TimeField('à : ', format='%H:%M')
-    res = SelectField('Résolution')
+    res = SelectField('Résolution', choices=resolutions)
     submit = SubmitField('Enregistrer')
     # path = FileField('Répertoire :', default=timelapse.conf.path)
     # print(path)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not self.start.data:
-            self.start.data = \
-               time(hour=timelapse.conf.start['hour'],
-                    minute=timelapse.conf.start['minute'])
-        if not self.end.data:
-            self.end.data = time(hour=timelapse.conf.end['hour'],
-                                 minute=timelapse.conf.end['minute'])
-        if not self.res.choices:
-            self.res.choices = [('240p', '320x240'),
-                                ('480p', '640x480'),
-                                ('600p', '800x600'),
-                                ('720p', '1280x720'),
-                                ('1080p', '1920x1080'),
-                                ('1440p', '2560x1440'),
-                                ('2160p', '3840x2160')]
-            self.res.data = self._get_name_from_res(timelapse.conf.res)
+        self.res.default = TimelapseForm.get_name_from_res(timelapse.conf.res)
+        self.process()
+        self.start.data = \
+            time(hour=timelapse.conf.start['hour'],
+                 minute=timelapse.conf.start['minute'])
+        self.end.data = time(hour=timelapse.conf.end['hour'],
+                             minute=timelapse.conf.end['minute'])
 
     @staticmethod
-    def _get_res_from_name(resname):
+    def get_res_from_name(resname):
         res = (0, 0)
-        if resname == '240p':
-            res = [320, 240]
-        if resname == '480p':
-            res = [640, 480]
-        if resname == '600p':
-            res = [800, 600]
-        if resname == '720p':
-            res = [1280, 720]
-        if resname == '1080p':
-            res = [1920, 1080]
-        if resname == '1440p':
-            res = [2560, 1440]
-        if resname == '2160p':
-            res = [3840, 2160]
+        for r in TimelapseForm.resolutions:
+            if resname == r[0]:
+                res = [int(v) for v in r[1].split('x')]
+                break
+        app.logger.debug('get_res_from_name(%s) -> %s', resname, res)
         return res
 
     @staticmethod
-    def _get_name_from_res(res):
-        name = '240p'
-        if res == (320, 240):
-            name = '240p'
-        if res == (640, 480):
-            name = '480p'
-        if res == (800, 600):
-            name = '600p'
-        if res == (1280, 720):
-            name = '720p'
-        if res == (1920, 1080):
-            name = '1080p'
-        if res == (2560, 1440):
-            name = '1440p'
-        if res == (3840, 2160):
-            name = '2160p'
+    def get_name_from_res(res):
+        name = ''
+        for i, r in enumerate(TimelapseForm.resolutions):
+            value = 'x'.join([str(v) for v in res])
+            if value == r[1]:
+                name = r[0]
+                break
+        app.logger.debug('get_name_from_res(%s) -> %s', res, name)
         return name
+
+    @staticmethod
+    def boolean_daylist(days):
+        booldays = [d in days for d, _ in TimelapseForm.dayslabels]
+        app.logger.debug('boolean_daylist(%s) -> %s', days, booldays)
+        return booldays
+
+    @staticmethod
+    def daylist_frombool(days):
+        daylist = [d for i, d in enumerate(TimelapseForm.daysfields)
+                   if days[i]]
+        app.logger.debug('daylist_frombool(%s) -> %s', days, daylist)
+        return daylist
+
+
+class ConfigForm(FlaskForm):
+    submit = SubmitField('Configurer')
 
 
 @app.route('/', methods=['GET', 'POST'])
+@app.route('/home', methods=['GET', 'POST'])
 def index():
-    """Video streaming home page."""
+    """Home page."""
     app.logger.info("index function launched")
+    ltl = launch_timelapse.delay()
+    form = ConfigForm()
+    tlconfig = {}
+    for k, v in timelapse.conf.items():
+        app.logger.debug('index: %s = %s', k, v)
+        if k == 'res':
+            tlconfig[k] = ('x').join((str(v) for v in timelapse.conf[k]))
+        elif k == 'days':
+            tlconfig[k] = (', ').join([d for i, d in enumerate(
+                TimelapseForm.daysnames) if timelapse.conf[k][i]])
+        elif k in ('end', 'start'):
+            tlconfig[k] = (':').join(
+                (str(timelapse.conf[k]['hour']).zfill(2),
+                 str(timelapse.conf[k]['minute']).zfill(2)))
+        else:
+            tlconfig[k] = v
+    app.logger.debug('index -> tlconfig: %s', tlconfig)
+    if request.method == 'POST':
+        return redirect(url_for("config_timelapse"))
+    return render_template('index.html', **tlconfig, form=form, ntp=ntp)
+
+
+@app.route('/config_timelapse', methods=['GET', 'POST'])
+def config_timelapse():
+    """Timelapse config page."""
+    app.logger.info("config_timelapse function launched")
     form = TimelapseForm()
-    timelapse_on = form.timelapse_on
-    app.logger.info(f'index.togglestream.data: {timelapse_on.data}')
+    # form.process()
 
     app.logger.debug(f'{form.errors}')
     if request.method == 'GET':
-        timelapse_on = form.timelapse_on
-        app.logger.debug(f'index.{request.method} -> '
-                         f'timelapse_on.data: {timelapse_on.data}')
-        app.logger.debug(f'index.{request.method} -> errors -> {form.errors}')
-
-    if form.validate_on_submit():
-        app.logger.info('index.form validated')
         for field in form:
-            if field.name == 'start' or field.name == 'end':
-                timelapse.conf[field.name]['hour'] = 0  # params.hour
-                timelapse.conf[field.name]['minute'] = 0  # params.minute
-            elif field.name in timelapse.conf.keys():
-                timelapse.conf[field.name] = field.data
-            elif field.name == 'res':
-                timelapse.conf[field.name] = \
-                    form._get_res_from_name(field.data)
+            app.logger.debug(f'index.{request.method}:'
+                             f' {field.name} = {field.data}')
+            # if field.name == 'days':
+            #     request.form.setlist(field.name, timelapse.conf[field.name])
+            if field.name == 'res':
+                field.data = \
+                    form.get_name_from_res(timelapse.conf[field.name])
+            elif field.name == 'days':
+                app.logger.debug('for days: %s',
+                                 request.form.getlist(field.name))
+                field.data = form.daylist_frombool(timelapse.conf[field.name])
+        app.logger.debug(f'config_timelapse.{request.method} ->'
+                         f'errors -> {form.errors}')
+
+        return render_template('config_timelapse.html', form=form, ntp=ntp)
+
+    if form.validate_on_submit() and request.method == 'POST':
+        app.logger.info('config_timelapse.form validated')
+        for field in form:
+            name = field.name
+            if name == 'start' or name == 'end':
+                timelapse.conf[name]['hour'] = 0  # params.hour
+                timelapse.conf[name]['minute'] = 0  # params.minute
+            elif name == 'days':
+                timelapse.conf[name] = \
+                    form.boolean_daylist(request.form.getlist(name))
+                app.logger.debug('for days, form.getlist(%s) -> %s',
+                                 name, request.form.getlist(name))
+            elif name == 'res':
+                timelapse.conf[name] = \
+                    form.get_res_from_name(request.form.get(name))
+            elif name in timelapse.conf.keys():
+                if isinstance(field, BooleanField):
+                    timelapse.conf[name] = (True if request.form.get(name)
+                                            else False)
+                else:
+                    timelapse.conf[name] = request.form.get(name)
             else:
                 continue
-            app.logger.debug(f'index.form: {field.name} ='
-                             f' {field.data} ({timelapse.conf[field.name]})')
+            app.logger.debug(f'config_timelapse.form validated: '
+                             f'({field.name in timelapse.conf.keys()})'
+                             f'{field.name}'
+                             f'= {timelapse.conf[field.name]}')
         timelapse.save()
+        # launch_timelapse()
+        app.logger.debug('timelapse.save: new conf -> %s', timelapse.conf)
+        timelapse.camera.stop_stream()
+        # CAMERA_FREED.set()
 
-    else:
-        app.logger.info(f'index.form not validated -> {form.errors}')
+        app.logger.info(f'config_timelapse.form.validate_on_submit ->'
+                        f'errors -> {form.errors}')
 
-    return render_template('index.html', form=form)
+        return redirect(url_for('index'))
 
 
 def gen(camera):
@@ -184,20 +278,36 @@ def gen(camera):
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 
-@app.route('/video_feed', methods=['GET', 'POST'])
-def video_feed():
+@app.route('/last_pic', methods=['GET'])
+def last_pic():
     """Video streaming route. Put this in the src attribute of an img tag."""
     # video = togglestream.data if togglestream else False
     app.logger.info(f'video_feed')
 
     # resp = Response(mimetype='multipart/x-mixed-replace; boundary=frame')
+    if timelapse.camera.thread:
+        timelapse.camera.stop_stream()
+    if not timelapse.conf.lastpic and timelapse.conf.timelapse_on:
+        timelapse.take_picture()
+    return send_file(timelapse.conf.lastpic,
+                     mimetype='image/jpeg')
+
+
+@app.route('/video_feed', methods=['GET'])
+def video_feed():
+    """Video streaming route. Put this in the src attribute of an img tag."""
+    # video = togglestream.data if togglestream else False
+    app.logger.info(f'video_feed')
+
+    # launch_timelapse(video_feed())
     if not timelapse.camera.thread:
-        timelapse.camera.perm_stream()
+        timelapse.camera.start_stream()
     return Response(gen(timelapse.camera),
                     mimetype='multipart/x-mixed-replace;'
                     'boundary=frame')
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', threaded=True)
+    app.run(host='0.0.0.0', threaded=True, debug=True)
+    # csrf.init_app(app)
 
