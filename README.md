@@ -22,9 +22,9 @@ Manuel utilisateur
 * *Il est nécessaire d'être équipé d'un écran et d'un câble HDMI (ou d'un adapteur HDMI-VGA qui fonctionne).*
 * *Le Raspberry doit être connecté au réseau pour que l'installation fonctionne.*
 
-Une installation peut être envisagé [en chroot depuis un système linux](https://gist.github.com/htruong/7df502fb60268eeee5bca21ef3e436eb) :
+Alternativement, une installation peut être envisagé [en chroot depuis un système linux](https://gist.github.com/htruong/7df502fb60268eeee5bca21ef3e436eb)
 
-1. Récupérer les sources du programme sur github :
+1. Récupérer les codes sources du programme, par exemple sur github :
    `git clone https://github.com/PiZep/timelapse_control`
 2. Dans le dossier se trouvent deux scripts d'installation :
   * `install_venv.sh`
