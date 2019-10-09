@@ -70,6 +70,8 @@ Le Raspberry est accessible depuis tout appareil équipé du WiFi.
 
 Des options supplémentaires sont accessibles si le Raspberry a accès à un seveur NTP, permettant de définir les plages horaires et les jours, notamment afin de limiter l'utilisation de la mémoire.
 
+5. Les photos sont sauvegardées par défaut dans un répertoire `timelapse/` situé dans la racine du répertoire de l'application. Elles sont ensuite organisées en sous-répertoire contenant chacun mille photos.
+
 Organisation des fichiers source
 --------------------------------
 ### Camera
@@ -110,3 +112,5 @@ TODO
 * Intégrer un threading fonctionnel pour l'utilisation de la camera. Le streaming interrompt le time lapse si ce dernier survient pendant l'utilisation de la caméra.
 * Clarifier le fichier `server_app.py` et réorganiser les méthodes et fonctions.
 * Rendre l'interface plus cohérente. Le mélange de `bootstrap` et de css perso rend le tout assez laid.
+* Ajouter une jauge permettant d'estimer le nombre de photos qui pourront encore être prises.
+* Ajouter les fonctionnalités liées au serveur NTP.
