@@ -15,6 +15,8 @@ References
   - http://blog.miguelgrinberg.com/post/flask-video-streaming-revisited.
 - Hotspot configuration
   - http://www.raspberryconnect.com/projects/65-raspberrypi-hotspot-accesspoints/168-raspberry-pi-hotspot-access-point-dhcpcd-method
+- Flask
+  - https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world
 
 Manuel utilisateur
 ------------------
@@ -45,6 +47,9 @@ Alternativement, une installation peut être envisagé [en chroot depuis un syst
 ### Utilisation
 Le Raspberry est accessible depuis tout appareil équipé du WiFi.
 
+0. L'application est sensée se lancée automatiquement au démarrage. Cette partie n'a pas été intégrée, d'où la commande suivante.
+   _Lancer l'application via :_ `./start_web_server.sh pi`
+
 1. Se connecter au WiFi. Un serveur d'application Flask est lancé automatiquement au démarrage du Raspberry.
 
    *Nom du wifi :* `TimeLapse03`
@@ -67,4 +72,40 @@ Des options supplémentaires sont accessibles si le Raspberry a accès à un sev
 
 Organisation des fichiers source
 --------------------------------
+### Camera
+* `stream_camera.py`
+* `camera_opencv.py`
+* `camera_pi.py`
 
+Il s'agit des modules gérant la caméra, notamment la partie streaming (http://blog.miguelgrinberg.com/post/flask-video-streaming-revisited).
+Le module stream_camera.py est la classe de base utilisé par les deux autres modules et n'est pas utilisée directement.
+Ces modules permettent d'instancier une classe `Camera`
+
+### Configuration
+* `configmodule.py`
+  Ce module gère la sérialisation des données, via la classe `ConfigJSON`.
+* `configtl.py`, `configtl.json`
+  Le module python définit la configuration de base et les règles de vérification. Le fichier json correspond à la sauvegarde réalisée durant le fonctionnement de l'application.
+
+### Timelapse
+* `timelapse.py`
+Le module timelapse.py contient la logique du Time Lapse, via la classe `TimeLapse`, qui hérite de la clase `ConfigJSON`.
+Cette dernière est instanciée avec en paramètre une classe `Camera` et un élément de configuration (un module, un nom de module, un dictionnaire...).
+
+### Serveur Flask
+* `server_app`.py
+Le serveur Flask est le serveur d'application qui permet de générer l'interface utilisateur web. Tout est centralisé dans ce module.
+
+### Autres
+* `templates` : contient les vues pour la génération des pages web
+* `static` : fichiers statics, css et js
+* `hotspot_scripts` : scripts et fichiers de configuration utilisés lors de l'installation du hotspot.
+* `files.old` : anciens fichiers, utilisés lors du développement. Laissés à titre informatif, mais rien n'est trié.
+* `webform.py` : tentative de clarification du code de `server_app.py`, pas encore aboutie.
+
+TODO
+----
+* Faire en sorte que l'application démarre automatiquement, via `crontab` ou `systemd`.
+* Intégrer un threading fonctionnel pour l'utilisation de la camera. Le streaming interrompt le time lapse si ce dernier survient pendant l'utilisation de la caméra.
+* Clarifier le fichier `server_app.py` et réorganiser les méthodes et fonctions.
+* Rendre l'interface plus cohérente. Le mélange de `bootstrap` et de css perso rend le tout assez laid.
