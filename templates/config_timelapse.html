@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <title>Contrôle de la caméra</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tlindex.css') }}" media="all" type="text/css">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/tlform.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" media="all" type="text/css">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <noscript> -->
+    <!--   <style> -->
+    <!--     body { -->
+    <!--       opacity: 1; -->
+    <!--     } -->
+    <!--   </style> -->
+    <!-- </noscript> -->
+  </head>
+
+  <body>
+
+    <header>
+      <h1>Contrôle de la caméra</h1>
+    </header>
+
+    <section>
+
+      <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="column main">
+          <img src="{{ url_for('video_feed', video=video) }}" alt="Vidéo en streaming ou dernière prise de vue">
+          <div class="custom-control custom-switch" id="togglestream">
+            {{ form.timelapse_on(id="timelapse_on", class="custom-control-input") }}
+            <label class="custom-control-label" for="timelapse_on" style="font-weight:bold; color:#ffffff; background-color:#000">Time Lapse</label>
+          </div>
+          <!-- Streaming</label> -->
+        </div>
+
+        </div class="column main">
+
+        <div class="column side">
+          <fieldset>
+            <legend>Configuration de la caméra</legend>
+            Intervale : {{ form.interval(id="interval", size=15, oninput="convertToImgPerTime(value)") }} sec.<br>
+            soit <span id="freq"></span><br>
+            {{ form.res.label }}: {{ form.res }}
+          </fieldset>
+
+          <!-- <h2>Paramétrage de l'activité</h2> -->
+          <fieldset>
+            <legend>Paramétrage des horaires</legend>
+            <p class="comment">Sans serveur de temps, l'option n'est pas active</p>
+
+            {% if ntp == True %}
+            <!-- Choix des jours de la semaine -->
+            <span class="list">
+              <span class="start">{{ form.timeset.label }}</span>
+              <span class="end">{{ form.timeset(id="days", onclick="showOrHide('block')") }}</span><br>
+            </span>
+            <small class="comment">Si tous ou aucun coché, actif tous les jours</small><br>
+            <ul id="block">
+              {% for day in form.days %}
+              <li class="list"> 
+                <span class="start">{{ day.label }}</span>
+                <span class="end">{{ day() }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+
+            <!-- Choix des heures de début et de fin -->
+            <label for="start">De :</label>
+            {{ form.start(id="start") }}
+
+            <label for="stop">à :</label>
+            {{ form.end(id="stop") }} <br>
+            <small class="comment">Si "Début" = "Fin", la capture est faite en continu les jours sélectionnés.</small>
+            {% else %}
+            <span class="list">
+              <span class="start">{{ form.timeset.label }}</span>
+              <span class="end">{{ form.timeset(id="days", onclick="showOrHide('block')", disabled=True) }}</span><br>
+            </span>
+            <small class="comment">Si tous ou aucun coché, actif tous les jours</small><br>
+            {% endif %}
+          </fieldset>
+
+          <fieldset>
+            <legend>Validation</legend>
+            <!-- {{ form.path }}<br> -->
+            {{ form.submit() }}
+          </fieldset>
+
+        </div class="column side">
+      </form>
+
+    </section>
+
+  </body>
+</html>
