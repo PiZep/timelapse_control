@@ -97,6 +97,7 @@ Cette dernière est instanciée avec en paramètre une classe `Camera` et un él
 Le serveur Flask est le serveur d'application qui permet de générer l'interface utilisateur web. Tout est centralisé dans ce module.
 
 ### Autres
+* `dotdict.py` : module permettant d'accéder aux clés des `dict` comme si elles étaient des attributs. Exemple : `d['key']` et `d.key` sont équivalents
 * `templates` : contient les vues pour la génération des pages web
 * `static` : fichiers statics, css et js
 * `hotspot_scripts` : scripts et fichiers de configuration utilisés lors de l'installation du hotspot.
