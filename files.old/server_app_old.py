@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 """Main app"""
+import webbrowser
 import threading
 import locale
 import logging
+import calendar
+from datetime import time
 from importlib import import_module
 import os
 from flask import (Flask,
@@ -12,11 +15,18 @@ from flask import (Flask,
                    send_file,
                    url_for,
                    redirect)
-from webforms import TimelapseForm, ConfigForm
+from flask_wtf import FlaskForm  # , CsrfProtect
+from wtforms import (BooleanField,
+                     widgets,
+                     SubmitField,
+                     SelectField,
+                     SelectMultipleField)
+from wtforms.validators import DataRequired
+from wtforms.fields.html5 import (IntegerField,
+                                  TimeField)
 import ntplib
 import configtl
 from timelapse import TimeLapse
-
 
 app = Flask(__name__)
 # csrf = CsrfProtect()
@@ -66,6 +76,93 @@ locale.setlocale(locale.LC_ALL, '')
 app.config.from_object(Config)
 
 
+class MultiCheckboxField(SelectMultipleField):
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
+
+
+class TimelapseForm(FlaskForm):
+    """
+    Timelapse webform fields
+    """
+    resolutions = [('240p', '320x240'),
+                   ('480p', '640x480'),
+                   ('600p', '800x600'),
+                   ('720p', '1280x720'),
+                   ('1080p', '1920x1080'),
+                   ('1440p', '2560x1440'),
+                   ('2160p', '3840x2160')]
+
+    daysfields = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+    daysnames = [calendar.day_name[i] for i, _ in enumerate(daysfields)]
+
+    app.logger.debug(f'config: {timelapse.conf}')
+    timelapse_on = BooleanField('Time Lapse',
+                                default=timelapse.conf.timelapse_on)
+    interval = IntegerField(default=timelapse.conf.interval,
+                            validators=[DataRequired()])
+    timeset = BooleanField('Jours de la semaine',
+                           default=timelapse.conf.timeset)
+
+    dayslabels = list(zip(daysfields, daysnames))
+    days = MultiCheckboxField('Label', choices=dayslabels)
+
+    start = TimeField('De : ', format='%H:%M')
+    end = TimeField('à : ', format='%H:%M')
+    res = SelectField('Résolution', choices=resolutions)
+    submit = SubmitField('Enregistrer')
+    # path = FileField('Répertoire :', default=timelapse.conf.path)
+    # print(path)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.res.default = TimelapseForm.get_name_from_res(timelapse.conf.res)
+        self.process()
+        self.start.data = \
+            time(hour=timelapse.conf.start['hour'],
+                 minute=timelapse.conf.start['minute'])
+        self.end.data = time(hour=timelapse.conf.end['hour'],
+                             minute=timelapse.conf.end['minute'])
+
+    @staticmethod
+    def get_res_from_name(resname):
+        res = (0, 0)
+        for r in TimelapseForm.resolutions:
+            if resname == r[0]:
+                res = [int(v) for v in r[1].split('x')]
+                break
+        app.logger.debug('get_res_from_name(%s) -> %s', resname, res)
+        return res
+
+    @staticmethod
+    def get_name_from_res(res):
+        name = ''
+        for i, r in enumerate(TimelapseForm.resolutions):
+            value = 'x'.join([str(v) for v in res])
+            if value == r[1]:
+                name = r[0]
+                break
+        app.logger.debug('get_name_from_res(%s) -> %s', res, name)
+        return name
+
+    @staticmethod
+    def boolean_daylist(days):
+        booldays = [d in days for d, _ in TimelapseForm.dayslabels]
+        app.logger.debug('boolean_daylist(%s) -> %s', days, booldays)
+        return booldays
+
+    @staticmethod
+    def daylist_frombool(days):
+        daylist = [d for i, d in enumerate(TimelapseForm.daysfields)
+                   if days[i]]
+        app.logger.debug('daylist_frombool(%s) -> %s', days, daylist)
+        return daylist
+
+
+class ConfigForm(FlaskForm):
+    submit = SubmitField('Configurer')
+
+
 # Asynchronous work
 # @app.before_first_request
 # def activate_timelapse():
@@ -112,10 +209,9 @@ def index():
 def config_timelapse():
     """Timelapse config page."""
     app.logger.info("config_timelapse function launched")
-    form = TimelapseForm(timelapse.conf)
+    form = TimelapseForm()
     CAMERA_FREED.clear()
 
-    app.logger.debug(f'{request.method}')
     app.logger.debug(f'{form.errors}')
     if request.method == 'GET':
         for field in form:
@@ -151,7 +247,7 @@ def config_timelapse():
                 timelapse.conf[name] = \
                     form.get_res_from_name(request.form.get(name))
             elif name in timelapse.conf.keys():
-                if hasattr(field, 'false_values'):
+                if isinstance(field, BooleanField):
                     timelapse.conf[name] = (True if request.form.get(name)
                                             else False)
                 else:

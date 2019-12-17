@@ -2,6 +2,7 @@
 """Flask forms"""
 import calendar
 from datetime import time
+import logging
 from wtforms import (BooleanField,
                      widgets,
                      SubmitField,
@@ -52,47 +53,48 @@ class TimelapseForm(FlaskForm):
 
     def __init__(self, conf, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.res.default = TimelapseForm.get_name_from_res(conf.res)
+        self.res.default = self.get_name_from_res(conf.res)
         self.process()
+        self.timelapse_on.data = conf.timelapse_on
         self.start.data = \
             time(hour=conf.start['hour'],
                  minute=conf.start['minute'])
         self.end.data = time(hour=conf.end['hour'],
                              minute=conf.end['minute'])
         self.timeset.data = conf.timeset
+        self.interval.data = conf.interval
+        self.logger = \
+            logging.getLogger('server_app.webforms.TimelapseForm')
+        # self.logger.debug('__init__')
 
-    @staticmethod
-    def get_res_from_name(resname):
+    def get_res_from_name(self, resname):
         res = (0, 0)
         for r in TimelapseForm.resolutions:
             if resname == r[0]:
                 res = [int(v) for v in r[1].split('x')]
                 break
-        # app.logger.debug('get_res_from_name(%s) -> %s', resname, res)
+        # self.logger.debug('get_res_from_name(%s) -> %s', resname, res)
         return res
 
-    @staticmethod
-    def get_name_from_res(res):
+    def get_name_from_res(self, res):
         name = ''
         for i, r in enumerate(TimelapseForm.resolutions):
             value = 'x'.join([str(v) for v in res])
             if value == r[1]:
                 name = r[0]
                 break
-        # app.logger.debug('get_name_from_res(%s) -> %s', res, name)
+        # self.logger.debug('get_name_from_res(%s) -> %s', res, name)
         return name
 
-    @staticmethod
-    def boolean_daylist(days):
+    def boolean_daylist(self, days):
         booldays = [d in days for d, _ in TimelapseForm.dayslabels]
-        # app.logger.debug('boolean_daylist(%s) -> %s', days, booldays)
+        self.logger.debug('boolean_daylist(%s) -> %s', days, booldays)
         return booldays
 
-    @staticmethod
-    def daylist_frombool(days):
+    def daylist_frombool(self, days):
         daylist = [d for i, d in enumerate(TimelapseForm.daysfields)
                    if days[i]]
-        # app.logger.debug('daylist_frombool(%s) -> %s', days, daylist)
+        self.logger.debug('daylist_frombool(%s) -> %s', days, daylist)
         return daylist
 
 
